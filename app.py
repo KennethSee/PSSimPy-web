@@ -8,7 +8,10 @@ setup_parameters_page = st.Page("setup/1_simulation_parameters.py",
 setup_input_page = st.Page("setup/2_input_data.py",
                            title="Input Data",
                            icon=":material/input:")
-setup_preview_page = st.Page("setup/3_preview.py",
+setup_customize_agents_page = st.Page("setup/3_customize_agents.py",
+                           title="Customize Agents",
+                           icon=":material/manage_accounts:")
+setup_preview_page = st.Page("setup/4_preview.py",
                              title="Preview",
                              icon=":material/preview:")
 results_raw_page = st.Page("results/1_raw_data.py",
@@ -21,7 +24,7 @@ results_liquidity_page = st.Page("results/2_liquidity.py",
 pg = st.navigation(
     {
         "Landing": [landing_page],
-        "Setup": [setup_parameters_page, setup_input_page, setup_preview_page],
+        "Setup": [setup_parameters_page, setup_input_page, setup_customize_agents_page, setup_preview_page],
         "Reulsts": [results_raw_page, results_liquidity_page]
     }
 )
