@@ -1,1 +1,2 @@
+pssimpy==0.1.1
 streamlit==1.38.0
