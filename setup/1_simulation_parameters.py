@@ -2,7 +2,7 @@ import streamlit as st
 
 from utils.date_validation import is_24_hour_format
 
-st.markdown("# Simulation Parameters")
+st.markdown("# Basic Simulation Parameters")
 
 # Parameter fields
 opening_time = st.text_input('Opening Time', value='08:00', max_chars=5, placeholder='HH:mm')
