@@ -87,6 +87,8 @@ if st.button('Register Input Data'):
         st.session_state['Input Data'] = {'Banks': df_banks, 'Accounts': df_accounts}
         if st.session_state['random_transactions_flag']:
             st.session_state['Random Transactions'] = True
+            st.session_state['Transaction Probability'] = txn_arrival_prob
+            st.session_state['Transaction Amount Range'] = (min_txn_amount, max_txn_amount)
         else:
             st.session_state['Random Transactions'] = False
             st.session_state['Input Data']['Transactions'] = df_transactions
