@@ -48,18 +48,26 @@ st.divider()
 
 if st.button('Begin Simulation'):
     with st.spinner('Running simulation...'):
-        sim = ABMSim(
-            'PSSimPy-web',
-            banks=st.session_state['Input Data']['Banks'], 
-            accounts=st.session_state['Input Data']['Accounts'],
-            transactions =st.session_state['Input Data']['Transactions'],
-            open_time=st.session_state['Parameters']['Opening Time'],
-            close_time=st.session_state['Parameters']['Closing Time'],
-            processing_window=st.session_state['Parameters']['Processing Window'],
-            num_days=st.session_state['Parameters']['Number of Days'],
-            eod_clear_queue=st.session_state['Parameters']['EOD Clear Queue'],
-            eod_force_settlement=st.session_state['Parameters']['EOD Force Settlement']
-            )
+        # identify params
+        sim_params = {
+            'name': 'PSSimPy-web',
+            'banks': st.session_state['Input Data']['Banks'], 
+            'accounts': st.session_state['Input Data']['Accounts'],
+            'open_time': st.session_state['Parameters']['Opening Time'],
+            'close_time': st.session_state['Parameters']['Closing Time'],
+            'processing_window': st.session_state['Parameters']['Processing Window'],
+            'num_days': st.session_state['Parameters']['Number of Days'],
+            'eod_clear_queue': st.session_state['Parameters']['EOD Clear Queue'],
+            'eod_force_settlement': st.session_state['Parameters']['EOD Force Settlement']
+        }
+        if st.session_state['Random Transactions']:
+            sim_params['txn_arrival_prob'] = st.session_state['Transaction Probability']
+            sim_params['txn_amount_range'] = st.session_state['Transaction Amount Range']
+        else:
+            sim_params['transactions'] = st.session_state['Input Data']['Transactions']
+
+        # initialize and run simulator
+        sim = ABMSim(**sim_params)
         sim.run()
 
     st.success('Simulation completed!')
