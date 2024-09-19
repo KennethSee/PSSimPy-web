@@ -1,7 +1,6 @@
 import streamlit as st
-import inspect
 import textwrap
-from code_editor import code_editor
+from code_editor import code_editor # uses streamlit-code-editor package
 from PSSimPy import Bank
 
 st.write('# Customize Bank Agents')
