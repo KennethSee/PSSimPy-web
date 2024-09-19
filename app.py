@@ -1,5 +1,7 @@
 import streamlit as st
 
+from utils.session import initialize_session_state_variables
+
 # define pages
 landing_page = st.Page("landing.py", title="Hello", icon="👋")
 setup_parameters_page = st.Page("setup/1_simulation_parameters.py", 
@@ -34,3 +36,4 @@ st.set_page_config(
 )
 
 pg.run()
+initialize_session_state_variables()
