@@ -46,4 +46,4 @@ if (existing_strategy_implementation != new_strategy_implementation['text']) and
     st.session_state['Bank Strategies'][strategy_name] = {'class': CustomBank, 'implementation': existing_strategy_implementation}
 
 
-    st.success('Strategy implementation updated')
+    st.success(f'Strategy "{strategy_name}" implementation updated!')
