@@ -16,10 +16,13 @@ setup_customize_agents_page = st.Page("setup/3_customize_bank_agents.py",
 setup_customize_settlement_agent_page = st.Page("setup/4_customize_settlement_agent.py",
                              title="Customize Settlement Agent",
                              icon=":material/sync_alt:")
-setup_customize_credit_facility_page = st.Page("setup/5_customize_credit_facility_agent.py",
+setup_customize_queue_page = st.Page("setup/5_customize_queue_agent.py",
+                             title="Customize Queue Agent",
+                             icon=":material/table_rows:")
+setup_customize_credit_facility_page = st.Page("setup/6_customize_credit_facility_agent.py",
                              title="Customize Credit Facility Agent",
                              icon=":material/currency_exchange:")
-setup_preview_page = st.Page("setup/6_preview.py",
+setup_preview_page = st.Page("setup/7_preview.py",
                              title="Preview",
                              icon=":material/preview:")
 results_raw_page = st.Page("results/1_raw_data.py",
@@ -32,7 +35,7 @@ results_liquidity_page = st.Page("results/2_liquidity.py",
 pg = st.navigation(
     {
         "Landing": [landing_page],
-        "Setup": [setup_parameters_page, setup_input_page, setup_customize_agents_page, setup_customize_settlement_agent_page, setup_customize_credit_facility_page, setup_preview_page],
+        "Setup": [setup_parameters_page, setup_input_page, setup_customize_agents_page, setup_customize_settlement_agent_page, setup_customize_queue_page, setup_customize_credit_facility_page, setup_preview_page],
         "Reulsts": [results_raw_page, results_liquidity_page]
     }
 )
