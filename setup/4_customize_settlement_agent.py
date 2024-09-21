@@ -31,12 +31,13 @@ else:
     old_constraint_code = textwrap.dedent("\n".join(constraint_template_code.splitlines()[0:]))
 
 # editor for user to implement function
-constraint_implementation = code_editor(old_constraint_code, 
+constraint_implementation = code_editor('\n' + old_constraint_code, # pad empty first line
                                         height=[5, 1000], 
                                         lang='python', 
                                         buttons=SUBMIT_BUTTON,
                                         options={'wrap': True})
 # save to session state on submit
+constraint_implementation['text'] = "\n".join(constraint_implementation['text'].splitlines()[1:]) # strip first empty line
 if (constraint_implementation['text'] != '') and (constraint_implementation['text'] != st.session_state['Constraint Handler'][1]):
     # initialize constraint handler class with provided implementation
     class CustomConstraintHandler(AbstractConstraintHandler):
