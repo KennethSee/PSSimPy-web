@@ -3,6 +3,8 @@ import textwrap
 from code_editor import code_editor # uses streamlit-code-editor package
 from PSSimPy import Bank
 
+from utils.object import SUBMIT_BUTTON
+
 st.write('# Customize Bank Agents')
 
 # select strategy
@@ -19,15 +21,7 @@ else:
     # existing_strategy_implementation = textwrap.dedent(existing_strategy_implementation)
 
 # code editor for editing strategy logic
-custom_btns = [{
-  "name": "Submit",
-#   "feather": "Submit",
-  "hasText": True,
-  "alwaysOn": True,
-  "commands": ["submit"],
-  "style": {"top": "0.46rem", "right": "0.4rem"}
-}]
-new_strategy_implementation = code_editor(existing_strategy_implementation, height=[5, 1000], lang='python', buttons=custom_btns)
+new_strategy_implementation = code_editor(existing_strategy_implementation, height=[5, 1000], lang='python', buttons=SUBMIT_BUTTON)
 if (existing_strategy_implementation != new_strategy_implementation['text']) and (new_strategy_implementation['text'] != '') and (strategy_name != ''):
     existing_strategy_implementation = new_strategy_implementation['text']
     class CustomBank(Bank):

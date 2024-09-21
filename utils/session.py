@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from PSSimPy.constraint_handler import PassThroughHandler
 
 from utils.helper import initialize_dict_key
 
@@ -27,3 +28,5 @@ def initialize_session_state_variables():
     initialize_dict_key(st.session_state, 'Transaction Amount Range', None)
     # Bank Strategies
     initialize_dict_key(st.session_state, 'Bank Strategies', {})
+    # Constraint Handler
+    initialize_dict_key(st.session_state, 'Constraint Handler', (PassThroughHandler, None)) # default to pass through
