@@ -58,7 +58,11 @@ if st.button('Begin Simulation'):
             'processing_window': st.session_state['Parameters']['Processing Window'],
             'num_days': st.session_state['Parameters']['Number of Days'],
             'eod_clear_queue': st.session_state['Parameters']['EOD Clear Queue'],
-            'eod_force_settlement': st.session_state['Parameters']['EOD Force Settlement']
+            'eod_force_settlement': st.session_state['Parameters']['EOD Force Settlement'],
+            'constraint_handler': st.session_state['Constraint Handler'][0],
+            'transaction_fee_handler': st.session_state['Transaction Fee']['class'],
+            'transaction_fee_rate': st.session_state['Transaction Fee']['rate'],
+            'strategy_mapping': {key: val['class'] for (key, val) in st.session_state['Bank Strategies'].items()}
         }
         if st.session_state['Random Transactions']:
             sim_params['txn_arrival_prob'] = st.session_state['Transaction Probability']
