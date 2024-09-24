@@ -59,8 +59,8 @@ if st.button('Begin Simulation'):
             'num_days': st.session_state['Parameters']['Number of Days'],
             'eod_clear_queue': st.session_state['Parameters']['EOD Clear Queue'],
             'eod_force_settlement': st.session_state['Parameters']['EOD Force Settlement'],
-            'constraint_handler': st.session_state['Constraint Handler'][0],
-            'transaction_fee_handler': st.session_state['Transaction Fee']['class'],
+            'constraint_handler': st.session_state['Constraint Handler'][0](),
+            'transaction_fee_handler': st.session_state['Transaction Fee']['class'](),
             'transaction_fee_rate': st.session_state['Transaction Fee']['rate'],
             'strategy_mapping': {key: val['class'] for (key, val) in st.session_state['Bank Strategies'].items()}
         }
@@ -71,6 +71,7 @@ if st.button('Begin Simulation'):
             sim_params['transactions'] = st.session_state['Input Data']['Transactions']
 
         # initialize and run simulator
+        print(sim_params)
         sim = ABMSim(**sim_params)
         sim.run()
 

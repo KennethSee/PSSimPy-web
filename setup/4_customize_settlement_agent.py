@@ -3,7 +3,8 @@ import inspect
 import textwrap
 from PSSimPy.constraint_handler import AbstractConstraintHandler, PassThroughHandler, MaxSizeConstraintHandler, MinBalanceConstraintHandler
 from PSSimPy.transaction_fee import AbstractTransactionFee, FixedTransactionFee
-from PSSimPy. transaction import Transaction
+from PSSimPy.transaction import Transaction
+from PSSimPy.account import Account
 from code_editor import code_editor
 from typing import Union, Dict
 
