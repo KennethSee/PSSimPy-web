@@ -2,7 +2,7 @@ import streamlit as st
 import plotly.express as px
 from PSSimPy.simulator import ABMSim
 
-from utils.file import log_file_reader
+from utils.file import log_file_reader, delete_log_files
 
 st.markdown("# Preview")
 
@@ -86,5 +86,8 @@ if st.button('Begin Simulation'):
         }
         if st.session_state['Random Transactions']:
             st.session_state['Log Files']['Transactions Arrival'] = log_file_reader('transactions_arrival')
+
+        # clear log files from directory
+        delete_log_files()
 
     st.success('Simulation completed!')

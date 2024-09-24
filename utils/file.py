@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 
 def check_missing_headers(df, required_headers: list):
@@ -34,3 +35,18 @@ def log_file_reader(log_file_type: str):
     # Read and return the log file as a Pandas DataFrame
     df = pd.read_csv(f'PSSimPy-web-{log_file_type}.csv')
     return df
+
+def delete_log_files():
+    files_to_remove = [
+        "PSSimPy-web-account_balance.csv",
+        "PSSimPy-web-credit_facility.csv",
+        "PSSimPy-web-processed_transactions.csv",
+        "PSSimPy-web-queue_stats.csv",
+        "PSSimPy-web-transaction_fees.csv",
+        "PSSimPy-web-transactions_arrival.csv"
+    ]
+    for filename in files_to_remove:
+        file_path = os.path.join(filename)  # Create the full file path
+        if os.path.exists(file_path):  # Check if the file exists
+            os.remove(file_path)  # Remove the file
+            print(f"Removed {filename}")  # Confirm removal
