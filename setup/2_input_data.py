@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-from utils.file_validation import check_missing_headers
+from utils.file import check_missing_headers
 
 st.markdown("# Input Data")
 

@@ -2,6 +2,8 @@ import streamlit as st
 import plotly.express as px
 from PSSimPy.simulator import ABMSim
 
+from utils.file import log_file_reader
+
 st.markdown("# Preview")
 
 # Section 1: Basic Parameters
@@ -71,8 +73,18 @@ if st.button('Begin Simulation'):
             sim_params['transactions'] = st.session_state['Input Data']['Transactions']
 
         # initialize and run simulator
-        print(sim_params)
         sim = ABMSim(**sim_params)
         sim.run()
+
+        # ingest simulation output
+        st.session_state['Log Files'] = {
+            'Processed Transactions': log_file_reader('processed_transactions'),
+            'Transaction Fees': log_file_reader('transaction_fees'),
+            'Queue Stats': log_file_reader('queue_stats'),
+            'Account Balance': log_file_reader('account_balance'),
+            'Credit Facility': log_file_reader('credit_facility')
+        }
+        if st.session_state['Random Transactions']:
+            st.session_state['Log Files']['Transactions Arrival'] = log_file_reader('transactions_arrival')
 
     st.success('Simulation completed!')

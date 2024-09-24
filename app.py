@@ -31,12 +31,15 @@ results_raw_page = st.Page("results/1_raw_data.py",
 results_liquidity_page = st.Page("results/2_liquidity.py",
                                  title="Liquidity",
                                  icon=":material/water_drop:")
+results_credit_usage_page = st.Page("results/3_credit_usage.py",
+                                    title="Credit Usage",
+                                    icon=":material/credit_card:")
 
 pg = st.navigation(
     {
         "Landing": [landing_page],
         "Setup": [setup_parameters_page, setup_input_page, setup_customize_agents_page, setup_customize_settlement_agent_page, setup_customize_queue_page, setup_customize_credit_facility_page, setup_preview_page],
-        "Reulsts": [results_raw_page, results_liquidity_page]
+        "Reulsts": [results_raw_page, results_liquidity_page, results_credit_usage_page]
     }
 )
 st.set_page_config(

@@ -37,3 +37,12 @@ def initialize_session_state_variables():
         'class': FixedTransactionFee, # placeholder
         'implementation': None
     })
+    # Output Files
+    initialize_dict_key(st.session_state, 'Log Files', {
+            'Processed Transactions': pd.DataFrame(),
+            'Transaction Fees': pd.DataFrame(),
+            'Queue Stats': pd.DataFrame(),
+            'Account Balance': pd.DataFrame(),
+            'Credit Facility': pd.DataFrame(),
+            'Transactions Arrival': pd.DataFrame()
+    })
