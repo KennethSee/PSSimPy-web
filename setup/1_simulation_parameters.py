@@ -1,6 +1,6 @@
 import streamlit as st
 
-from utils.date_validation import is_24_hour_format
+from utils.date_time import is_24_hour_format
 
 st.markdown("# Basic Simulation Parameters")
 
