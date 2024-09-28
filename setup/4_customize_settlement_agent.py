@@ -10,7 +10,7 @@ from typing import Union, Dict
 
 from utils.object import SUBMIT_BUTTON
 from utils.helper import get_function_header
-from utils.date_validation import is_24_hour_format
+from utils.date_time import is_24_hour_format
 
 st.write('# Customize Settlement Agent')
 
