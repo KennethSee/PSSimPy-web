@@ -46,9 +46,9 @@ def calculate_time_difference(submission_time, settlement_time, submission_day=1
     Example
     -------
     >>> calculate_time_difference('08:00', '10:30')
-    2.5
+    150
     >>> calculate_time_difference('16:00', '09:00', submission_day=1, settlement_day=2)
-    17.0
+    1020
     """
     # Parse submission and settlement times into datetime objects
     submission_datetime = datetime.strptime(submission_time, '%H:%M') + timedelta(days=submission_day)
@@ -58,7 +58,22 @@ def calculate_time_difference(submission_time, settlement_time, submission_day=1
     if settlement_datetime < submission_datetime:
         raise ValueError("Settlement time is earlier than submission time.")
 
-    # Calculate time difference in hours
-    time_difference = (settlement_datetime - submission_datetime).total_seconds() / 3600.0
+    # Calculate time difference in minutes
+    time_difference = (settlement_datetime - submission_datetime).total_seconds() / 60.0
 
     return time_difference
+
+
+def add_minutes_to_time(time_str, minutes_to_add):
+    if not is_24_hour_format(time_str):
+        raise ValueError("Time string is not in proper 24h format.")
+
+    # Convert the time string to a datetime object
+    time_format = "%H:%M"
+    time_obj = datetime.strptime(time_str, time_format)
+    
+    # Add the specified minutes
+    new_time_obj = time_obj + timedelta(minutes=minutes_to_add)
+    
+    # Convert back to a string in 24h time format
+    return new_time_obj.strftime(time_format)
