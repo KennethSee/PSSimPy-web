@@ -77,3 +77,13 @@ def add_minutes_to_time(time_str, minutes_to_add):
     
     # Convert back to a string in 24h time format
     return new_time_obj.strftime(time_format)
+
+
+# Function to iterate through time windows
+def get_time_windows(start_time: str, end_time: str, interval_minutes: int) -> list:
+    time_windows = []
+    current_time = start_time
+    while current_time < end_time:
+        time_windows.append(current_time)
+        current_time = add_minutes_to_time(current_time, interval_minutes)
+    return time_windows
