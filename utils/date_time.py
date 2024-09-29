@@ -86,4 +86,6 @@ def get_time_windows(start_time: str, end_time: str, interval_minutes: int) -> l
     while current_time < end_time:
         time_windows.append(current_time)
         current_time = add_minutes_to_time(current_time, interval_minutes)
+    # always add closing time as well
+    time_windows.append(end_time)
     return time_windows

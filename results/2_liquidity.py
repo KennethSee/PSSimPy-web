@@ -3,7 +3,7 @@ import pandas as pd
 import altair as alt
 
 from utils.date_time import add_minutes_to_time, get_time_windows
-from utils.indicator import turnover_ratio
+from utils.indicator import turnover_ratio, average_payment_delay
 
 # Turnover Ratio Calculation Function
 def calculate_turnover_ratios(transactions_df, balances_df, opening_time, closing_time, processing_window, num_days):
@@ -52,6 +52,52 @@ def calculate_turnover_ratios(transactions_df, balances_df, opening_time, closin
 
     return turnover_df
 
+# Average Payment Delay Calculation Function
+def calculate_avg_pmt_delay(transactions_df, opening_time, closing_time, processing_window, num_days):
+    # Create an empty list to store the results
+    results = []
+
+    # Loop through each day of the simulation
+    for day in range(1, num_days + 1):
+        # Get the time windows for the day
+        time_windows = get_time_windows(opening_time, closing_time, processing_window)
+        
+        # For each time window, calculate the average payment delay
+        for i, time_window in enumerate(time_windows):
+            # Filter transactions up to the current time window
+            filtered_transactions = transactions_df[
+                (
+                    (transactions_df['day'] == day) & 
+                    (transactions_df['time'] <= time_window) & 
+                    (transactions_df['status'] == 'Success')
+                ) |
+                (
+                    (transactions_df['day'] < day) &
+                    (transactions_df['status'] == 'Success')
+                )
+            ]
+            
+            payment_delay_metric = average_payment_delay(
+                filtered_transactions['submission_time'].tolist(), 
+                filtered_transactions['settlement_time'].tolist(), 
+                filtered_transactions['submission_day'].tolist(),
+                filtered_transactions['settlement_day'].tolist(),
+                filtered_transactions['amount'].tolist(),
+                True
+            )
+            
+            # Append results to the list
+            results.append({
+                'day': day,
+                'time': time_window,
+                'average_payment_delay': payment_delay_metric
+            })
+
+    # Convert the results list to a DataFrame
+    payment_delay_df = pd.DataFrame(results)
+
+    return payment_delay_df
+
 st.markdown("# Liquidity Results")
 
 # establish relevant variables
@@ -97,3 +143,5 @@ st.altair_chart(facet_chart, use_container_width=True)
 
 
 st.markdown("## Average Payment Delay")
+
+st.dataframe(calculate_avg_pmt_delay(transactions_df, opening_time, closing_time, processing_window, num_days))

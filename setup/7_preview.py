@@ -66,6 +66,7 @@ if st.button('Begin Simulation'):
             'transaction_fee_rate': st.session_state['Transaction Fee']['rate'],
             'strategy_mapping': {key: val['class'] for (key, val) in st.session_state['Bank Strategies'].items()}
         }
+
         if st.session_state['Random Transactions']:
             sim_params['txn_arrival_prob'] = st.session_state['Transaction Probability']
             sim_params['txn_amount_range'] = st.session_state['Transaction Amount Range']

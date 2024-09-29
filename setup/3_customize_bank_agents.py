@@ -32,7 +32,9 @@ new_strategy_implementation = code_editor(existing_strategy_implementation,
 if (existing_strategy_implementation != new_strategy_implementation['text']) and (new_strategy_implementation['text'] != '') and (strategy_name != ''):
     existing_strategy_implementation = "\n".join(new_strategy_implementation['text'].splitlines()[1:])
     class CustomBank(Bank):
-        pass  # Placeholder until we overwrite the strategy method below
+
+        def __init__(self, name, strategy_type=strategy_name, **kwargs):
+            super().__init__(name, strategy_type, **kwargs)
 
     # full_strategy_code = f"def strategy(self):\n{textwrap.indent(existing_strategy_implementation, '    ')}"
 

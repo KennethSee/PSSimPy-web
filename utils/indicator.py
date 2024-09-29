@@ -24,7 +24,7 @@ def turnover_ratio(total_payments_settled: float, average_liquidity: float) -> f
     return total_payments_settled/average_liquidity
 
 
-def average_payment_delay(submission_times, settlement_times, submission_days=None, settlement_days=None):
+def average_payment_delay(submission_times, settlement_times, submission_days=None, settlement_days=None, amounts=None, weighted=False):
     """
     Calculate the Average Payment Delay in a Large Value Payment System (LVPS).
 
@@ -41,11 +41,15 @@ def average_payment_delay(submission_times, settlement_times, submission_days=No
         List of days corresponding to each submission time. Default assumes all times are on the same day.
     settlement_days : list of int, optional
         List of days corresponding to each settlement time. Default assumes all times are on the same day.
+    amounts : list of floats, optional
+        List of amounts corresponding to each payment. Default is None.
+    weighted : bool, optional
+        If True, calculate a weighted average delay based on the payment amounts.
 
     Returns
     -------
     float
-        The average payment delay in hours.
+        The (weighted) average payment delay in minutes.
 
     Raises
     ------
@@ -59,8 +63,9 @@ def average_payment_delay(submission_times, settlement_times, submission_days=No
     >>> settlement_times = ['08:30', '10:00', '09:00']
     >>> submission_days = [0, 0, 0]
     >>> settlement_days = [0, 0, 1]
-    >>> calculate_average_payment_delay(submission_times, settlement_times, submission_days, settlement_days)
-    5.0
+    >>> amounts = [100, 200, 300]
+    >>> calculate_average_payment_delay(submission_times, settlement_times, submission_days, settlement_days, amounts, weighted=True)
+    300.0
     """
     N = len(submission_times)
     if N != len(settlement_times):
@@ -75,16 +80,30 @@ def average_payment_delay(submission_times, settlement_times, submission_days=No
     if len(submission_days) != N or len(settlement_days) != N:
         raise ValueError("The number of submission days and settlement days must match the number of payments.")
 
+    # If weighted, amounts should be provided and match the number of payments
+    if weighted:
+        if amounts is None:
+            raise ValueError("Amounts must be provided for weighted average calculation.")
+        if len(amounts) != N:
+            raise ValueError("The number of amounts must match the number of payments.")
+    
     total_delay = 0.0
+    total_weight = 0.0 if weighted else N
 
     for i in range(N):
-        delay = calculate_time_difference(
+        # Calculate the delay in minutes
+        delay_in_minutes = calculate_time_difference(
             submission_time=submission_times[i],
             settlement_time=settlement_times[i],
             submission_day=submission_days[i],
             settlement_day=settlement_days[i]
         )
-        total_delay += delay
+        
+        if weighted:
+            total_delay += delay_in_minutes * amounts[i]
+            total_weight += amounts[i]
+        else:
+            total_delay += delay_in_minutes
 
-    average_delay = total_delay / N
+    average_delay = total_delay / total_weight
     return average_delay
