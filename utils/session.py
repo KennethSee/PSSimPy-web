@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from PSSimPy.constraint_handler import PassThroughHandler
 from PSSimPy.transaction_fee import FixedTransactionFee
+from PSSimPy.queues import DirectQueue
 
 from utils.helper import initialize_dict_key
 
@@ -30,13 +31,15 @@ def initialize_session_state_variables():
     # Bank Strategies
     initialize_dict_key(st.session_state, 'Bank Strategies', {})
     # Constraint Handler
-    initialize_dict_key(st.session_state, 'Constraint Handler', (PassThroughHandler, None)) # default to pass through
+    initialize_dict_key(st.session_state, 'Constraint Handler', {'class': PassThroughHandler, 'implementation': None}) # default to pass through
     # Transaction Fee
     initialize_dict_key(st.session_state, 'Transaction Fee', {
-        'rate': None,
+        'rate': 0.0,
         'class': FixedTransactionFee, # placeholder
         'implementation': None
     })
+    # Queue Handler
+    initialize_dict_key(st.session_state, 'Queue', {'class': DirectQueue, 'implementation': None})
     # Output Files
     initialize_dict_key(st.session_state, 'Log Files', {
             'Processed Transactions': pd.DataFrame(),
