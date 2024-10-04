@@ -1,8 +1,10 @@
 import streamlit as st
 import inspect
 import textwrap
+from typing import Tuple
 from code_editor import code_editor
 from PSSimPy.queues import AbstractQueue, DirectQueue, FIFOQueue, PriorityQueue
+from PSSimPy import Transaction
 
 from utils.object import SUBMIT_BUTTON
 from utils.helper import get_function_header
@@ -38,3 +40,26 @@ queue_implementation = code_editor('\n' + old_merged_code, # pad empty first lin
                                         buttons=SUBMIT_BUTTON,
                                         options={'wrap': True},
                                         key=f'queue_code_{queue_select}')
+
+# save to session state on save
+queue_implementation['text'] = "\n".join(queue_implementation['text'].splitlines()[1:]) # strip first empty line
+if (queue_implementation['text'] != '') and (queue_implementation['text'] != st.session_state['Queue']['implementation']):
+    # initialize transactino fee handler class with provided implementation
+    class CustomQueue(AbstractQueue):
+
+        def __init__(self):
+            super().__init__()
+
+    # Use exec to dynamically define the new constraint method
+    local_vars = {}
+    exec(queue_implementation['text'], globals(), local_vars)
+
+    # add abstract function implementation
+    CustomQueue.sorting_logic = local_vars['sorting_logic']
+    CustomQueue.dequeue_criteria = local_vars['dequeue_criteria']
+
+    # commit to session state
+    st.session_state['Queue']['class'] = CustomQueue
+    st.session_state['Queue']['implementation'] = queue_implementation['text']
+
+    st.success('Queue logic saved')
