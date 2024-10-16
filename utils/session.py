@@ -3,6 +3,7 @@ import pandas as pd
 from PSSimPy.constraint_handler import PassThroughHandler
 from PSSimPy.transaction_fee import FixedTransactionFee
 from PSSimPy.queues import DirectQueue
+from PSSimPy.credit_facilities import SimplePriced
 
 from utils.helper import initialize_dict_key
 
@@ -40,6 +41,8 @@ def initialize_session_state_variables():
     })
     # Queue Handler
     initialize_dict_key(st.session_state, 'Queue', {'class': DirectQueue, 'implementation': None})
+    # Credit Facility
+    initialize_dict_key(st.session_state, 'Credit Facility', {'class': SimplePriced, 'implementation': None})
     # Output Files
     initialize_dict_key(st.session_state, 'Log Files', {
             'Processed Transactions': pd.DataFrame(),
