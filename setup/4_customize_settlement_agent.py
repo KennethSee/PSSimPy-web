@@ -25,10 +25,10 @@ if constraint_select == '(No Template)':
     # format it to only include a "pass" in the function body as placeholder
     old_constraint_code = f"{constraint_function_header}\n{textwrap.indent('pass', '    ')}"
 elif constraint_select == '':
-    if st.session_state['Constraint Handler'][1] is None:
+    if st.session_state['Constraint Handler']['implementation'] is None:
         old_constraint_code = '# please select a template'
     else:
-        old_constraint_code = st.session_state['Constraint Handler'][1]
+        old_constraint_code = st.session_state['Constraint Handler']['implementation']
 else:
     constraint_template_code = inspect.getsource(ootb_constraint_templates[constraint_select].process_transaction)
     old_constraint_code = textwrap.dedent("\n".join(constraint_template_code.splitlines()[0:]))
@@ -42,7 +42,7 @@ constraint_implementation = code_editor('\n' + old_constraint_code, # pad empty 
                                         key=f'constraint_code_{constraint_select}')
 # save to session state on submit
 constraint_implementation['text'] = "\n".join(constraint_implementation['text'].splitlines()[1:]) # strip first empty line
-if (constraint_implementation['text'] != '') and (constraint_implementation['text'] != st.session_state['Constraint Handler'][1]):
+if (constraint_implementation['text'] != '') and (constraint_implementation['text'] != st.session_state['Constraint Handler']['implementation']):
     # initialize constraint handler class with provided implementation
     class CustomConstraintHandler(AbstractConstraintHandler):
         def __init__(self):
@@ -60,7 +60,7 @@ if (constraint_implementation['text'] != '') and (constraint_implementation['tex
     CustomConstraintHandler.process_transaction = local_vars['process_transaction']
 
     # commit to session state
-    st.session_state['Constraint Handler'] = (CustomConstraintHandler, constraint_implementation['text'])
+    st.session_state['Constraint Handler'] = {'class': CustomConstraintHandler, 'implementation': constraint_implementation['text']}
 
     st.success('Constraint logic saved')
 

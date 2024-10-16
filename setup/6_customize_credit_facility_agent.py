@@ -46,14 +46,14 @@ facility_implementation = code_editor('\n' + old_merged_code, # pad empty first 
 
 # save to session state on save
 facility_implementation['text'] = "\n".join(facility_implementation['text'].splitlines()[1:]) # strip first empty line
-if (facility_implementation['text'] != '') and (facility_implementation['text'] != st.session_state['Queue']['implementation']):
+if (facility_implementation['text'] != '') and (facility_implementation['text'] != st.session_state['Credit Facility']['implementation']):
     # initialize credit facility class with provided implementation
     class CustomCreditFacility(AbstractCreditFacility):
 
         def __init__(self):
             super().__init__()
 
-    # Use exec to dynamically define the new constraint method
+    # Use exec to dynamically define the new methods
     local_vars = {}
     exec(facility_implementation['text'], globals(), local_vars)
 
