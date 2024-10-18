@@ -53,6 +53,14 @@ if (facility_implementation['text'] != '') and (facility_implementation['text'] 
         def __init__(self):
             super().__init__()
 
+        # placeholder abstract function implementations
+        def calculate_fee(self, amount):
+            pass
+        def lend_credit(self, account, amount):
+            pass
+        def collect_repayment(self, account):
+            pass
+
     # Use exec to dynamically define the new methods
     local_vars = {}
     exec(facility_implementation['text'], globals(), local_vars)

@@ -5,6 +5,8 @@ import altair as alt
 from utils.date_time import add_minutes_to_time, get_time_windows
 from utils.indicator import turnover_ratio, average_payment_delay
 
+dynamic_width = max(150, 900/st.session_state['Parameters']['Number of Days'])
+
 # Turnover Ratio Calculation Function
 def calculate_turnover_ratios(transactions_df, balances_df, opening_time, closing_time, processing_window, num_days):
     # Create an empty list to store the results
@@ -131,7 +133,7 @@ base_chart = alt.Chart(turnover_ratios_df).mark_line().encode(
     color='day:N',  # Different colors for different days
     tooltip=['day', 'time', 'turnover_ratio']
 ).properties(
-    width=150,  # Adjusting width for each individual facet
+    width=dynamic_width,  # Adjusting width for each individual facet
     height=400  # Set height for the chart
 )
 # Facet the chart by 'day'
@@ -146,17 +148,32 @@ st.markdown("## Average Payment Delay")
 
 df_pmt_delay = calculate_avg_pmt_delay(transactions_df, opening_time, closing_time, processing_window, num_days)
 df_pmt_delay = df_pmt_delay.sort_values(by=['day', 'time'])
+# print(df_pmt_delay)
+# # Create the Altair chart
+# chart = alt.Chart(df_pmt_delay).mark_line().encode(
+#     x=alt.X('day_time:N', title='Day and Time', axis=alt.Axis(labelAngle=-45)),  # Combining day and time for x-axis
+#     y=alt.Y('average_payment_delay:Q', title='Average Payment Delay'),  # y-axis for the payment delay
+#     tooltip=['day', 'time', 'average_payment_delay']  # Tooltips to show detailed info on hover
+# ).properties(
+#     title='Average Payment Delay Over Time',
+#     width=800,
+#     height=400
+# )
 
-# Create the Altair chart
-chart = alt.Chart(df_pmt_delay).mark_line().encode(
-    x=alt.X('day_time:N', title='Day and Time', axis=alt.Axis(labelAngle=-45)),  # Combining day and time for x-axis
-    y=alt.Y('average_payment_delay:Q', title='Average Payment Delay'),  # y-axis for the payment delay
-    tooltip=['day', 'time', 'average_payment_delay']  # Tooltips to show detailed info on hover
+base_chart = alt.Chart(df_pmt_delay).mark_line().encode(
+    x=alt.X('time:N', title='Time', axis=alt.Axis(labelAngle=0)),  # Time on x-axis
+    y=alt.Y('average_payment_delay:Q', title='Average Payment Delay'),  # Average Payment Delay on y-axis
+    color='day:N',  # Different colors for different days
+    tooltip=['day', 'time', 'average_payment_delay']
 ).properties(
-    title='Average Payment Delay Over Time',
-    width=800,
-    height=400
+    width=dynamic_width,  # Adjusting width for each individual facet
+    height=400  # Set height for the chart
+)
+# Facet the chart by 'day'
+facet_chart = base_chart.facet(
+    column=alt.Column('day:N', title='Day')  # Separate columns for each day
 )
 
 # Display the chart in Streamlit
-st.altair_chart(chart, use_container_width=True)
+# st.altair_chart(chart, use_container_width=True)
+st.altair_chart(facet_chart, use_container_width=True)
