@@ -48,6 +48,35 @@ st.plotly_chart(fig)
 
 st.divider()
 
+# Section 3: Show non-bank agents that have been implemented
+st.markdown("## Agents Implemented")
+# Initialize the agent implementation states
+agents = {
+    "Settlement Agent": st.session_state['Constraint Handler']['implementation'] is not None 
+                        or st.session_state['Transaction Fee']['implementation'] is not None,
+    "Queue Agent": st.session_state['Queue']['implementation'] is not None,
+    "Credit Facility Agent": st.session_state['Credit Facility']['implementation'] is not None,
+}
+
+# Helper function to display ticks and crosses
+def display_status(is_implemented):
+    return "✅" if is_implemented else "❌"
+
+# Display the agents and their statuses in a row
+columns = st.columns(len(agents))
+for col, (agent_name, implemented) in zip(columns, agents.items()):
+    col.markdown(f"**{agent_name}**")
+    col.markdown(display_status(implemented))
+
+if not agents['Settlement Agent']:
+    st.warning('Settlement Agent is not implemented. It will default to no constraints and no transactino fees.')
+if not agents['Queue Agent']:
+    st.warning('Queue Agent is not implemented. It will default to a pass-through queue.')
+if not agents['Credit Facility Agent']:
+    st.warning('Credit Facility Agent is not implemented. It will default to a simple priced credit facility.')
+
+st.divider()
+
 if st.button('Begin Simulation'):
     with st.spinner('Running simulation...'):
         # identify params
