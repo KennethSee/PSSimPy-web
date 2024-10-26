@@ -19,6 +19,7 @@ st.write('## Define Constraints')
 # let users select an out-of-the-box constraint handler template or define their own
 ootb_constraint_templates = {'Pass Through': PassThroughHandler, 'Maximum Size': MaxSizeConstraintHandler, 'Minimum Balance': MinBalanceConstraintHandler}
 constraint_select = st.selectbox('Select constraint handler', ['', 'Pass Through', 'Maximum Size', 'Minimum Balance', '(No Template)'])
+# TO-DO: implement mechanism to account for additional arguments in __init__
 if constraint_select == '(No Template)':
     # get function header of abstract method in the Constraint Handler
     constraint_function_header = get_function_header(AbstractConstraintHandler.process_transaction, is_abstract_method=True)
