@@ -1,11 +1,14 @@
 from typing import Callable
 import inspect
 import textwrap
+import re
+import ast
 
 def initialize_dict_key(dictionary: dict, key, initialization_value):
     """Initizalizes a dictionary's key-value pair with the provided initialization value if the key does not exist."""
     if key not in dictionary:
         dictionary[key] = initialization_value
+
 
 def get_function_header(func: Callable, is_abstract_method:bool=True, is_static_method:bool=False) -> str:
     """Gets the header of a given function"""
@@ -22,3 +25,137 @@ def get_function_header(func: Callable, is_abstract_method:bool=True, is_static_
     function_header = textwrap.dedent(function_text.splitlines()[header_row_num])
 
     return function_header
+
+
+def replace_whitespace_with_underscore(input_string):
+    """
+    Replaces all whitespace characters in the input string with underscores.
+    
+    Args:
+        input_string (str): The input string to process.
+        
+    Returns:
+        str: The modified string with underscores instead of whitespaces.
+    """
+    return input_string.replace(" ", "_")
+
+
+class ClassImplementationModifier():
+
+    def __init__(self, code: str):
+        self.code = code
+
+    def replace_class_name(self, new_class_name: str):
+        # Regular expression to match the class name in the class definition
+        pattern = r"^class\s+\w+\s*(\(.*\))?:"
+
+        # Replace the class definition with the new class signature
+        modified_code = re.sub(
+            pattern,
+            f"class {new_class_name}:",
+            self.code,
+            count=1,
+            flags=re.MULTILINE
+        )
+        
+        self.code = modified_code
+
+    @staticmethod
+    def extract_function_code(code: str, function_name: str) -> str:
+        """
+        Extracts the full chunk of code for a given function name,
+        including decorators like @staticmethod or @abstractmethod.
+
+        Args:
+            code (str): The complete code as a string.
+            function_name (str): The name of the function to extract.
+
+        Returns:
+            str: The full code of the specified function, or an empty string if not found.
+        """
+        # Parse the code into an AST
+        try:
+            tree = ast.parse(code)
+        except SyntaxError as e:
+            raise SyntaxError(f"Syntax error in code: {e}")
+
+        # Initialize variables
+        function_node = None
+
+        # Find the function definition node
+        class NodeVisitor(ast.NodeVisitor):
+            def __init__(self):
+                self.function_node = None
+
+            def visit_FunctionDef(self, node):
+                if node.name == function_name:
+                    self.function_node = node
+                # Continue walking to find nested functions if needed
+                self.generic_visit(node)
+
+        visitor = NodeVisitor()
+        visitor.visit(tree)
+        function_node = visitor.function_node
+
+        if not function_node:
+            return ""
+
+        # Get the lines corresponding to the function definition
+        code_lines = code.splitlines()
+        # Adjust line numbers because ast uses 1-based indexing
+        start_lineno = function_node.lineno - 1
+
+        # For Python 3.8 and above, end_lineno is available
+        if hasattr(function_node, 'end_lineno'):
+            end_lineno = function_node.end_lineno
+        else:
+            # Estimate end_lineno by traversing the function body
+            # This might not be accurate for complex functions
+            end_lineno = function_node.body[-1].lineno
+
+        # Include decorators if any
+        decorator_lines = []
+        for decorator in function_node.decorator_list:
+            # Decorators may span multiple lines
+            decorator_start = decorator.lineno - 1
+            decorator_end = decorator.end_lineno if hasattr(decorator, 'end_lineno') else decorator.lineno
+            decorator_lines.extend(code_lines[decorator_start:decorator_end])
+
+        # Extract function code lines
+        function_code_lines = code_lines[start_lineno:end_lineno]
+        full_function_code_lines = decorator_lines + function_code_lines
+        full_function_code = "\n".join(full_function_code_lines)
+
+        return full_function_code
+
+    def replace_function(self, function_name: str, new_function_code: str):
+        # Extract the existing function code
+        old_function_code = self.extract_function_code(self.code, function_name)
+
+        if not old_function_code:
+            raise ValueError(f"Function '{function_name}' not found in the provided code.")
+
+        # Extract the leading whitespace (indentation) from the old function code
+        match = re.match(r"(\s*)def", old_function_code)
+        if not match:
+            # Try to match decorator indentation
+            match = re.match(r"(\s*)@", old_function_code)
+            if not match:
+                raise ValueError(f"Could not extract indentation from function '{function_name}'.")
+
+        leading_whitespace = match.group(1)
+
+        # Add indentation to the new function code
+        indented_new_code = "\n".join(
+            leading_whitespace + line if line.strip() else ""
+            for line in new_function_code.splitlines()
+        )
+
+        # Ensure there is a new line before and after the new code
+        formatted_new_code = f"\n{indented_new_code}\n"
+
+        # Replace the old function code with the new one
+        self.code = self.code.replace(old_function_code, formatted_new_code, 1)
+
+    def insert_import_statement(self, import_statement: str):
+        self.code = f"{import_statement}\n\n{self.code}"
