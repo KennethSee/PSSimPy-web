@@ -36,6 +36,7 @@ def log_file_reader(log_file_type: str):
     df = pd.read_csv(f'PSSimPy-web-{log_file_type}.csv')
     return df
 
+
 def delete_log_files():
     files_to_remove = [
         "PSSimPy-web-account_balance.csv",
