@@ -42,12 +42,13 @@ def initialize_session_state_variables():
         initialize_dict_key(st.session_state, 'Transaction Fee', {
                 'rate': 0.0,
                 'class': FixedTransactionFee, # placeholder
-                'implementation': None
+                'implementation': None,
+                'params': []
         })
         # Queue Handler
-        initialize_dict_key(st.session_state, 'Queue', {'class': DirectQueue, 'implementation': None})
+        initialize_dict_key(st.session_state, 'Queue', {'class': DirectQueue, 'implementation': None, 'params': []})
         # Credit Facility
-        initialize_dict_key(st.session_state, 'Credit Facility', {'class': SimplePriced, 'implementation': None})
+        initialize_dict_key(st.session_state, 'Credit Facility', {'class': SimplePriced, 'implementation': None, 'params': []})
         # Output Files
         initialize_dict_key(st.session_state, 'Log Files', {
                 'Processed Transactions': pd.DataFrame(),
@@ -94,7 +95,6 @@ def save_simulation_settings(simulation_setting_name: str, include_data: bool=Fa
                                 f.write(strategy_mod.code)
 
         # constraint handler
-        # TO-DO: Adjust __init__
         if st.session_state['Constraint Handler']['implementation'] is not None:
                 Path(f"{settings_folder}/constraint_handler").mkdir(parents=True)
                 base_constraint_handler_code = inspect.getsource(AbstractConstraintHandler)
@@ -114,12 +114,17 @@ def save_simulation_settings(simulation_setting_name: str, include_data: bool=Fa
                         f.write(constraint_handler_mod.code)
         
         # transaction fee handler
-        # TO-DO: Adjust __init__
         if st.session_state['Transaction Fee']['implementation'] is not None:
                 Path(f"{settings_folder}/transaction_fee_handler").mkdir(parents=True)
                 base_transaction_fee_handler_code = inspect.getsource(AbstractTransactionFee)
                 transaction_fee_handler_mod = ClassImplementationModifier(base_transaction_fee_handler_code)
                 transaction_fee_handler_mod.replace_class_name("CustomTransactionFee(AbstractTransactionFee)")
+                transaction_fee_handler_init_params = ClassImplementationModifier.generate_init_method(
+                        {param["name"]: param["default"] for param in st.session_state['Transaction Fee']['params']}, 
+                        True,
+                        "AbstractTransactionFee"
+                )
+                transaction_fee_handler_mod.replace_function('__init__', transaction_fee_handler_init_params)
                 transaction_fee_handler_mod.replace_function('calculate_fee', st.session_state['Transaction Fee']['implementation'])
                 transaction_fee_handler_mod.insert_import_statement('from PSSimPy.transaction_fee import AbstractTransactionFee')
                 # Save the generated code to a file
@@ -127,12 +132,19 @@ def save_simulation_settings(simulation_setting_name: str, include_data: bool=Fa
                         f.write(transaction_fee_handler_mod.code)
 
         # queue
-        # TO-DO: Adjust __init__
         if st.session_state['Queue']['implementation'] is not None:
                 Path(f"{settings_folder}/queue").mkdir(parents=True)
                 base_queue_code = inspect.getsource(AbstractQueue)
                 queue_mod = ClassImplementationModifier(base_queue_code)
                 queue_mod.replace_class_name("CustomQueue(AbstractQueue)")
+
+                # replace init
+                queue_init_params = ClassImplementationModifier.generate_init_method(
+                        {param["name"]: param["default"] for param in st.session_state['Queue']['params']}, 
+                        True,
+                        "AbstractQueue"
+                )
+                queue_mod.replace_function('__init__', queue_init_params)
 
                 # extract and replace custom implementation of queue functions
                 sorting_logic_code = queue_mod.extract_function_code(st.session_state['Queue']['implementation'], 'sorting_logic')
@@ -149,12 +161,19 @@ def save_simulation_settings(simulation_setting_name: str, include_data: bool=Fa
                         f.write(queue_mod.code)
 
         # credit facility
-        # TO-DO: Adjust __init__
         if st.session_state['Credit Facility']['implementation'] is not None:
                 Path(f"{settings_folder}/credit_facility").mkdir(parents=True)
                 base_credit_facility_code = inspect.getsource(AbstractCreditFacility)
                 credit_facility_mod = ClassImplementationModifier(base_credit_facility_code)
                 credit_facility_mod.replace_class_name("CustomCreditFacility(AbstractCreditFacility)")
+
+                # replace init
+                credit_facility_init_params = ClassImplementationModifier.generate_init_method(
+                        {param["name"]: param["default"] for param in st.session_state['Credit Facility']['params']}, 
+                        True,
+                        "AbstractCreditFacility"
+                )
+                credit_facility_mod.replace_function('__init__', credit_facility_init_params)
 
                 # extract and replace custom implementation of queue functions
                 calculate_fee_code = credit_facility_mod.extract_function_code(st.session_state['Credit Facility']['implementation'], 'calculate_fee')
@@ -176,7 +195,7 @@ def save_simulation_settings(simulation_setting_name: str, include_data: bool=Fa
                         st.session_state['Input Data']['Banks'].to_csv(f'{settings_folder}/data/banks.csv', index=False)
                 if st.session_state['Input Data']['Accounts'] is not None:
                         st.session_state['Input Data']['Accounts'].to_csv(f'{settings_folder}/data/accounts.csv', index=False)
-                if 'Transactions' in st.session_state['Input Data']:
+                if st.session_state['Input Data']['Transactions'] is not None:
                         st.session_state['Input Data']['Transactions'].to_csv(f'{settings_folder}/data/transactions.csv', index=False)
 
         # zip settings folder
