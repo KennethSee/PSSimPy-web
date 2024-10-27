@@ -241,7 +241,7 @@ class ClassImplementationModifier():
         return params
 
     @staticmethod
-    def generate_init_method(params: dict, is_inherited: bool = False) -> str:
+    def generate_init_method(params: dict, is_inherited: bool = False , inherited_abstract_class_name: str=None) -> str:
         """
         Generates an __init__ method dynamically with given parameters.
 
@@ -253,6 +253,12 @@ class ClassImplementationModifier():
         Returns:
             str: The generated __init__ method as a string.
         """
+        last_comma_string = ", " if len(params) > 0 else ""
+        if inherited_abstract_class_name is None:
+            inherited_abstract_class_name = "super()"
+            init_arg = ""
+        else:
+            init_arg = "self"
         # Separate parameters with and without default values
         required_params = [k for k, v in params.items() if v is None]
         optional_params = [f"{k}={repr(v)}" for k, v in params.items() if v is not None]
@@ -263,7 +269,7 @@ class ClassImplementationModifier():
         # Generate the body of the __init__ method
         body_lines = []
         if is_inherited:
-            body_lines.append("super().__init__()")  # Add super().__init__() if inherited
+            body_lines.append(f"{inherited_abstract_class_name}.__init__({init_arg})")  # Add super().__init__() if inherited
 
         # Add assignments for all parameters
         for param in params.keys():
@@ -273,5 +279,5 @@ class ClassImplementationModifier():
         body = "\n    ".join(body_lines)
 
         # Generate the final __init__ method
-        init_method = f"def __init__(self, {all_params}):\n    {body}"
+        init_method = f"def __init__(self{last_comma_string}{all_params}):\n    {body}"
         return init_method

@@ -37,7 +37,7 @@ def initialize_session_state_variables():
         # Bank Strategies
         initialize_dict_key(st.session_state, 'Bank Strategies', {})
         # Constraint Handler
-        initialize_dict_key(st.session_state, 'Constraint Handler', {'class': PassThroughHandler, 'implementation': None}) # default to pass through
+        initialize_dict_key(st.session_state, 'Constraint Handler', {'class': PassThroughHandler, 'implementation': None, 'params':[]}) # default to pass through
         # Transaction Fee
         initialize_dict_key(st.session_state, 'Transaction Fee', {
                 'rate': 0.0,

@@ -1,6 +1,7 @@
 import streamlit as st
 import inspect
 import textwrap
+from copy import copy
 from PSSimPy.constraint_handler import AbstractConstraintHandler, PassThroughHandler, MaxSizeConstraintHandler, MinBalanceConstraintHandler
 from PSSimPy.transaction_fee import AbstractTransactionFee, FixedTransactionFee
 from PSSimPy.transaction import Transaction
@@ -9,31 +10,111 @@ from code_editor import code_editor
 from typing import Union, Dict
 
 from utils.object import SUBMIT_BUTTON
-from utils.helper import get_function_header
+from utils.helper import get_function_header, ClassImplementationModifier
 from utils.date_time import is_24_hour_format
+
+
+# Initialize session state variables if they don't exist
+if "temp_params" not in st.session_state:
+    st.session_state["temp_params"] = []  # List to store parameter rows
+if "param_counter" not in st.session_state:
+    st.session_state["param_counter"] = 0  # Counter for unique keys
+if "current_constraint_handler" not in st.session_state:
+    st.session_state["current_constraint_handler"] = ""
+
+def add_parameter_row():
+    """Add a new parameter row."""
+    st.session_state["temp_params"].append(
+        {"name": "", "default": None}
+    )
+    st.session_state["param_counter"] += 1
 
 st.write('# Customize Settlement Agent')
 
-# Constraints
-st.write('## Define Constraints')
-# let users select an out-of-the-box constraint handler template or define their own
-ootb_constraint_templates = {'Pass Through': PassThroughHandler, 'Maximum Size': MaxSizeConstraintHandler, 'Minimum Balance': MinBalanceConstraintHandler}
-constraint_select = st.selectbox('Select constraint handler', ['', 'Pass Through', 'Maximum Size', 'Minimum Balance', '(No Template)'])
-# TO-DO: implement mechanism to account for additional arguments in __init__
-if constraint_select == '(No Template)':
-    # get function header of abstract method in the Constraint Handler
-    constraint_function_header = get_function_header(AbstractConstraintHandler.process_transaction, is_abstract_method=True)
-    # format it to only include a "pass" in the function body as placeholder
-    old_constraint_code = f"{constraint_function_header}\n{textwrap.indent('pass', '    ')}"
-elif constraint_select == '':
-    if st.session_state['Constraint Handler']['implementation'] is None:
-        old_constraint_code = '# please select a template'
-    else:
-        old_constraint_code = st.session_state['Constraint Handler']['implementation']
-else:
-    constraint_template_code = inspect.getsource(ootb_constraint_templates[constraint_select].process_transaction)
-    old_constraint_code = textwrap.dedent("\n".join(constraint_template_code.splitlines()[0:]))
+st.write("## Define Constraints")
 
+# Out-of-the-box templates
+ootb_constraint_templates = {
+    "Pass Through": PassThroughHandler,
+    "Maximum Size": MaxSizeConstraintHandler,
+    "Minimum Balance": MinBalanceConstraintHandler,
+}
+
+constraint_select = st.selectbox(
+    "Select constraint handler",
+    ["", "Pass Through", "Maximum Size", "Minimum Balance", "(No Template)"],
+)
+
+if constraint_select == "(No Template)":
+    if st.session_state["current_constraint_handler"] != constraint_select:
+        st.session_state["temp_params"] = [] # reset
+        st.session_state["param_counter"] = 0
+    st.session_state["current_constraint_handler"] = constraint_select
+    constraint_function_header = get_function_header(
+        AbstractConstraintHandler.process_transaction, is_abstract_method=True
+    )
+    old_constraint_code = f"{constraint_function_header}\n{textwrap.indent('pass', '    ')}"
+
+elif constraint_select == "":
+    if st.session_state["current_constraint_handler"] != constraint_select:
+        st.session_state["temp_params"] = st.session_state['Constraint Handler']['params'] # reset
+        st.session_state["param_counter"] = 0
+    st.session_state["current_constraint_handler"] = constraint_select
+    if st.session_state.get("Constraint Handler", {}).get("implementation") is None:
+        old_constraint_code = "# please select a template"
+    else:
+        old_constraint_code = st.session_state["Constraint Handler"]["implementation"]
+else:
+    if st.session_state["current_constraint_handler"] != constraint_select:
+        st.session_state["temp_params"] = [] # reset
+        st.session_state["param_counter"] = 0
+    st.session_state["current_constraint_handler"] = constraint_select
+    temp_settlement_params = (
+        ClassImplementationModifier.extract_init_params(
+            inspect.getsource(ootb_constraint_templates[constraint_select])
+        )
+    )
+    for key, value in temp_settlement_params.items():
+        existing_param = {"name": key, "default": value}
+        if existing_param["name"] not in [param["name"] for param in st.session_state["temp_params"]]:
+            st.session_state["temp_params"].append({"name": key, "default": value})
+    constraint_template_code = inspect.getsource(
+        ootb_constraint_templates[constraint_select].process_transaction
+    )
+    old_constraint_code = textwrap.dedent("\n".join(constraint_template_code.splitlines()))
+
+st.write("### Custom Parameters")
+
+# Add Parameter Button
+if st.button("Add Parameter"):
+    add_parameter_row()
+
+# Display Parameter Inputs
+for i, param in enumerate(st.session_state["temp_params"]):
+    col1, col2 = st.columns(2)
+
+    with col1:
+        param_name = st.text_input(
+            "Parameter Name", 
+            key=f"param_name_{i}", 
+            value=param["name"], 
+            placeholder="Enter parameter name"
+        )
+        st.session_state["temp_params"][i]["name"] = param_name
+
+    with col2:
+        default_value = st.text_input(
+            "Default Value (optional)", 
+            key=f"default_value_{i}", 
+            value=param["default"] or "", 
+            placeholder="Enter default value"
+        )
+        # Store None if the input is blank
+        st.session_state["temp_params"][i]["default"] = default_value if default_value.strip() else None
+
+
+
+st.write('### Constraint Logic')
 # editor for user to implement function
 constraint_implementation = code_editor('\n' + old_constraint_code, # pad empty first line
                                         height=[5, 1000], 
@@ -43,7 +124,10 @@ constraint_implementation = code_editor('\n' + old_constraint_code, # pad empty 
                                         key=f'constraint_code_{constraint_select}')
 # save to session state on submit
 constraint_implementation['text'] = "\n".join(constraint_implementation['text'].splitlines()[1:]) # strip first empty line
-if (constraint_implementation['text'] != '') and (constraint_implementation['text'] != st.session_state['Constraint Handler']['implementation']):
+if (constraint_implementation['text'] != '') and (
+    (constraint_implementation['text'] != st.session_state['Constraint Handler']['implementation'])
+    or (st.session_state['Constraint Handler']['params'] != st.session_state['temp_params'])
+    ):
     # initialize constraint handler class with provided implementation
     class CustomConstraintHandler(AbstractConstraintHandler):
         def __init__(self):
@@ -53,15 +137,20 @@ if (constraint_implementation['text'] != '') and (constraint_implementation['tex
         def process_transaction(self, transaction):        
             pass
 
+    init_implementation = ClassImplementationModifier.generate_init_method({param["name"]: param["default"] for param in st.session_state['temp_params']}, True, "AbstractConstraintHandler")
     # Use exec to dynamically define the new constraint method
+    print(init_implementation)
     local_vars = {}
+    exec(init_implementation, globals(), local_vars)
     exec(constraint_implementation['text'], globals(), local_vars)
 
-    # overwrite placeholder abstract function
+    # overwrite placeholder init and abstract functions
+    print(local_vars)
+    CustomConstraintHandler.__init__ = local_vars['__init__']
     CustomConstraintHandler.process_transaction = local_vars['process_transaction']
 
     # commit to session state
-    st.session_state['Constraint Handler'] = {'class': CustomConstraintHandler, 'implementation': constraint_implementation['text']}
+    st.session_state['Constraint Handler'] = {'class': CustomConstraintHandler, 'implementation': constraint_implementation['text'], 'params': copy(st.session_state['temp_params'])}
 
     st.success('Constraint logic saved')
 
