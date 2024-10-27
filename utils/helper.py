@@ -160,12 +160,25 @@ class ClassImplementationModifier():
         return full_function_code
 
     def replace_function(self, function_name: str, new_function_code: str):
-        # Extract the existing function code
+        """
+        Replace or insert a function in the class code.
+
+        Args:
+            function_name (str): The name of the function to replace or insert.
+            new_function_code (str): The code of the new function to insert or replace.
+        """
+        # Extract the existing function code (if it exists)
         old_function_code = self.extract_function_code(self.code, function_name)
 
-        if not old_function_code:
-            raise ValueError(f"Function '{function_name}' not found in the provided code.")
+        if old_function_code:
+            # If the function exists, replace it
+            self._replace_existing_function(old_function_code, new_function_code)
+        else:
+            # If the function does not exist, insert it under __init__ or at the beginning
+            self._insert_new_function(new_function_code)
 
+    def _replace_existing_function(self, old_function_code: str, new_function_code: str):
+        """Replace an existing function with new code."""
         # Extract the leading whitespace (indentation) from the old function code
         match = re.match(r"(\s*)def", old_function_code)
         if not match:
@@ -187,6 +200,36 @@ class ClassImplementationModifier():
 
         # Replace the old function code with the new one
         self.code = self.code.replace(old_function_code, formatted_new_code, 1)
+
+    def _insert_new_function(self, new_function_code: str):
+        """Insert the new function under __init__ or as the first function."""
+        # Extract the __init__ function code (if it exists)
+        init_function_code = self.extract_function_code(self.code, '__init__')
+
+        if init_function_code:
+            # Insert the new function right after __init__
+            insertion_point = self.code.find(init_function_code) + len(init_function_code)
+        else:
+            # Find the start of the class body
+            class_match = re.search(r'(class\s+\w+\s*(\(.*\))?:\s*\n)', self.code)
+            if class_match:
+                insertion_point = class_match.end()
+            else:
+                raise ValueError("Could not find class definition. Please ensure the class follows the correct syntax.")
+
+        # Determine the class-level indentation (usually no leading spaces)
+        class_indentation = re.match(r"(\s*)class", self.code).group(1)
+        
+        # Indent the new function code properly
+        indented_new_code = "\n".join(
+            class_indentation + "    " + line if line.strip() else ""
+            for line in new_function_code.splitlines()
+        )
+
+        # Insert the new function code at the determined position
+        self.code = (
+            self.code[:insertion_point] + f"\n{indented_new_code}\n" + self.code[insertion_point:]
+        )
 
     def insert_import_statement(self, import_statement: str):
         self.code = f"{import_statement}\n\n{self.code}"
