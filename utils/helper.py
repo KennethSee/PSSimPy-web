@@ -159,3 +159,82 @@ class ClassImplementationModifier():
 
     def insert_import_statement(self, import_statement: str):
         self.code = f"{import_statement}\n\n{self.code}"
+
+    @staticmethod
+    def extract_init_params(class_code: str) -> dict:
+        """
+        Extracts the parameters of the __init__ method from a class definition.
+
+        Args:
+            class_code (str): The class code as a string.
+
+        Returns:
+            dict: A dictionary with parameter names as keys and default values as values.
+                If a parameter has no default value, its value in the dictionary is None.
+        """
+        # Parse the code into an AST
+        try:
+            tree = ast.parse(class_code)
+        except SyntaxError as e:
+            raise SyntaxError(f"Syntax error in code: {e}")
+
+        # Initialize variables
+        init_func = None
+
+        # Find the class definition node
+        class_def = None
+        for node in tree.body:
+            if isinstance(node, ast.ClassDef):
+                class_def = node
+                break
+
+        if not class_def:
+            raise ValueError("No class definition found in the code.")
+
+        # Within the class, find the __init__ method
+        for node in class_def.body:
+            if isinstance(node, ast.FunctionDef) and node.name == '__init__':
+                init_func = node
+                break
+
+        if not init_func:
+            raise ValueError("No __init__ method found in the class.")
+
+        # Now, extract the arguments
+        args = init_func.args
+
+        # args.args is a list of ast.arg objects
+        # args.defaults is a list of default values, aligned to the last N arguments
+        # where N is len(defaults)
+        param_names = [arg.arg for arg in args.args]
+        defaults = args.defaults  # These are AST nodes representing default values
+
+        # Exclude "self" parameter
+        if param_names[0] == 'self':
+            param_names = param_names[1:]
+        else:
+            raise ValueError("__init__ method does not have 'self' as the first parameter.")
+
+        num_params = len(param_names)
+        num_defaults = len(defaults)
+        num_non_defaults = num_params - num_defaults
+
+        # Prepare the result dictionary
+        params = {}
+
+        # Assign None to parameters without defaults
+        for name in param_names[:num_non_defaults]:
+            params[name] = None
+
+        # For parameters with defaults, get the default value
+        for name, default in zip(param_names[num_non_defaults:], defaults):
+            # default is an AST node, we need to evaluate it
+            try:
+                # For safety, we can use ast.literal_eval, which supports simple constants
+                default_value = ast.literal_eval(default)
+            except (ValueError, SyntaxError):
+                # If we cannot evaluate the default value, set it to None
+                default_value = None
+            params[name] = default_value
+
+        return params
