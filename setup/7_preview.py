@@ -1,8 +1,11 @@
+import os
 import streamlit as st
 import plotly.express as px
 from PSSimPy.simulator import ABMSim
+from PSSimPy.constraint_handler import AbstractConstraintHandler
 
 from utils.file import log_file_reader, delete_log_files
+from utils.session import save_simulation_settings
 
 st.markdown("# Preview")
 
@@ -122,3 +125,30 @@ if st.button('Begin Simulation'):
         delete_log_files()
 
     st.success('Simulation completed!')
+
+
+# Save simulation settings
+SAVE_PATH = "./saved_settings"
+os.makedirs(SAVE_PATH, exist_ok=True)
+col1, col2, col3 = st.columns([2, 1, 1])
+with col1:
+    # Text input for simulation setting name
+    setting_name = st.text_input("Setting Name", placeholder="Enter setting name")
+with col2:
+    # Checkbox for export option
+    export_data = st.checkbox("Export data?")
+with col3:
+    # Button to save simulation settings
+    if st.button("Export Simulation Settings"):
+        # Check if a .zip file with the same name already exists
+        zip_path = os.path.join(SAVE_PATH, f"{setting_name}.zip")
+        if os.path.exists(zip_path):
+            # If the file exists, show an error message
+            st.error(f"A settings file named '{setting_name}.zip' already exists. Please use a different name.")
+        elif setting_name.strip() == "":
+            # Handle case where setting name is empty
+            st.error("The setting name cannot be empty. Please enter a valid name.")
+        else:
+            # If no conflict, call the save function
+            save_simulation_settings(setting_name, export_data)
+            st.success(f"'{setting_name}' has been successfully exported.")
