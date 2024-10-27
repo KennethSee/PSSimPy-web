@@ -241,43 +241,37 @@ class ClassImplementationModifier():
         return params
 
     @staticmethod
-    def generate_init_method(params: dict) -> str:
+    def generate_init_method(params: dict, is_inherited: bool = False) -> str:
         """
-        Generates a string representation of the __init__ method with given parameters.
+        Generates an __init__ method dynamically with given parameters.
 
         Args:
-            params (dict): A dictionary where keys are parameter names and values are default values.
-                        If a parameter has no default value, its value should be None.
+            params (dict): A dictionary where keys are parameter names, 
+                        and values are their default values (if any).
+            is_inherited (bool): If True, adds `super().__init__()` to the code.
 
         Returns:
-            str: A string representing the __init__ method.
+            str: The generated __init__ method as a string.
         """
-        # Separate parameters into those with and without default values
-        params_no_default = []
-        params_with_default = []
-        for name, value in params.items():
-            if value is None:
-                params_no_default.append(name)
-            else:
-                params_with_default.append((name, value))
+        # Separate parameters with and without default values
+        required_params = [k for k, v in params.items() if v is None]
+        optional_params = [f"{k}={repr(v)}" for k, v in params.items() if v is not None]
 
-        # Build the parameter list
-        param_list = ['self']
-        param_list.extend(params_no_default)
+        # Combine required and optional parameters into a parameter list
+        all_params = ", ".join(required_params + optional_params)
 
-        for name, value in params_with_default:
-            # Use repr for default values to handle special characters
-            default_str = repr(value)
-            param_list.append(f'{name}={default_str}')
+        # Generate the body of the __init__ method
+        body_lines = []
+        if is_inherited:
+            body_lines.append("super().__init__()")  # Add super().__init__() if inherited
 
-        # Join the parameters into a string
-        param_list_str = ', '.join(param_list)
+        # Add assignments for all parameters
+        for param in params.keys():
+            body_lines.append(f"self.{param} = {param}")
 
-        # Build the body of the method by assigning parameters to self
-        assignments = [f'    self.{name} = {name}' for name in params.keys()]
-        assignments_str = '\n'.join(assignments)
+        # Join the body lines with proper indentation
+        body = "\n    ".join(body_lines)
 
-        # Combine everything into the final method string
-        method_str = f'def __init__({param_list_str}):\n{assignments_str}'
-
-        return method_str
+        # Generate the final __init__ method
+        init_method = f"def __init__(self, {all_params}):\n    {body}"
+        return init_method
