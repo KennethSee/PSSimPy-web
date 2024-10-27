@@ -41,6 +41,36 @@ def replace_whitespace_with_underscore(input_string):
     return input_string.replace(" ", "_")
 
 
+def format_value(value):
+    """Format value: Convert strings to numbers if possible, otherwise use repr()."""
+    # Try to convert to an integer or float if the value is a string
+    if isinstance(value, str):
+        try:
+            # First, try to convert to an integer
+            int_value = int(value)
+            print(f"'{value}' is converted to int: {int_value}")
+            return int_value
+        except ValueError:
+            try:
+                # If that fails, try to convert to a float
+                float_value = float(value)
+                print(f"'{value}' is converted to float: {float_value}")
+                return float_value
+            except ValueError:
+                # If neither int nor float conversion works, treat as a string
+                print(f"'{value}' is not a number, keeping as string")
+                return repr(value)
+
+    # Return as-is if already a number (int or float)
+    if isinstance(value, (int, float)):
+        print(f"{value} is a number")
+        return value
+
+    # For other types, use repr()
+    print(f"{value} is of unsupported type, using repr()")
+    return repr(value)
+
+
 class ClassImplementationModifier():
 
     def __init__(self, code: str):
@@ -241,7 +271,11 @@ class ClassImplementationModifier():
         return params
 
     @staticmethod
-    def generate_init_method(params: dict, is_inherited: bool = False , inherited_abstract_class_name: str=None) -> str:
+    def generate_init_method(
+        params: dict, 
+        is_inherited: bool = False, 
+        inherited_abstract_class_name: str = None
+    ) -> str:
         """
         Generates an __init__ method dynamically with given parameters.
 
@@ -249,19 +283,26 @@ class ClassImplementationModifier():
             params (dict): A dictionary where keys are parameter names, 
                         and values are their default values (if any).
             is_inherited (bool): If True, adds `super().__init__()` to the code.
+            inherited_abstract_class_name (str): The name of the abstract class to call in super().
 
         Returns:
             str: The generated __init__ method as a string.
         """
+        # Determine whether to add a comma after 'self' in the parameter list
         last_comma_string = ", " if len(params) > 0 else ""
+
+        # Handle inheritance: default to `super()` if no class name is provided
         if inherited_abstract_class_name is None:
             inherited_abstract_class_name = "super()"
             init_arg = ""
         else:
             init_arg = "self"
+
         # Separate parameters with and without default values
         required_params = [k for k, v in params.items() if v is None]
-        optional_params = [f"{k}={repr(v)}" for k, v in params.items() if v is not None]
+        optional_params = [
+            f"{k}={format_value(v)}" for k, v in params.items() if v is not None
+        ]
 
         # Combine required and optional parameters into a parameter list
         all_params = ", ".join(required_params + optional_params)
@@ -269,7 +310,8 @@ class ClassImplementationModifier():
         # Generate the body of the __init__ method
         body_lines = []
         if is_inherited:
-            body_lines.append(f"{inherited_abstract_class_name}.__init__({init_arg})")  # Add super().__init__() if inherited
+            # Add super().__init__() if inherited
+            body_lines.append(f"{inherited_abstract_class_name}.__init__({init_arg})")
 
         # Add assignments for all parameters
         for param in params.keys():

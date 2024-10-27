@@ -100,6 +100,12 @@ def save_simulation_settings(simulation_setting_name: str, include_data: bool=Fa
                 base_constraint_handler_code = inspect.getsource(AbstractConstraintHandler)
                 constraint_handler_mod = ClassImplementationModifier(base_constraint_handler_code)
                 constraint_handler_mod.replace_class_name("CustomConstraintHandler(AbstractConstraintHandler)")
+                constraint_handler_init_params = ClassImplementationModifier.generate_init_method(
+                        {param["name"]: param["default"] for param in st.session_state['Constraint Handler']['params']}, 
+                        True,
+                        "AbstractConstraintHandler"
+                )
+                constraint_handler_mod.replace_function('__init__', constraint_handler_init_params)
                 constraint_handler_mod.replace_function('process_transaction', st.session_state['Constraint Handler']['implementation'])
                 constraint_handler_mod.insert_import_statement('from PSSimPy.constraint_handler import AbstractConstraintHandler')
                 constraint_handler_mod.insert_import_statement('from PSSimPy.transaction import Transaction')
@@ -170,7 +176,7 @@ def save_simulation_settings(simulation_setting_name: str, include_data: bool=Fa
                         st.session_state['Input Data']['Banks'].to_csv(f'{settings_folder}/data/banks.csv', index=False)
                 if st.session_state['Input Data']['Accounts'] is not None:
                         st.session_state['Input Data']['Accounts'].to_csv(f'{settings_folder}/data/accounts.csv', index=False)
-                if st.session_state['Input Data']['Transactions'] is not None:
+                if 'Transactions' in st.session_state['Input Data']:
                         st.session_state['Input Data']['Transactions'].to_csv(f'{settings_folder}/data/transactions.csv', index=False)
 
         # zip settings folder
