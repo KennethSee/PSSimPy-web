@@ -3,6 +3,7 @@ import inspect
 import textwrap
 import re
 import ast
+from collections import OrderedDict
 
 def initialize_dict_key(dictionary: dict, key, initialization_value):
     """Initizalizes a dictionary's key-value pair with the provided initialization value if the key does not exist."""
@@ -238,3 +239,45 @@ class ClassImplementationModifier():
             params[name] = default_value
 
         return params
+
+    @staticmethod
+    def generate_init_method(params: dict) -> str:
+        """
+        Generates a string representation of the __init__ method with given parameters.
+
+        Args:
+            params (dict): A dictionary where keys are parameter names and values are default values.
+                        If a parameter has no default value, its value should be None.
+
+        Returns:
+            str: A string representing the __init__ method.
+        """
+        # Separate parameters into those with and without default values
+        params_no_default = []
+        params_with_default = []
+        for name, value in params.items():
+            if value is None:
+                params_no_default.append(name)
+            else:
+                params_with_default.append((name, value))
+
+        # Build the parameter list
+        param_list = ['self']
+        param_list.extend(params_no_default)
+
+        for name, value in params_with_default:
+            # Use repr for default values to handle special characters
+            default_str = repr(value)
+            param_list.append(f'{name}={default_str}')
+
+        # Join the parameters into a string
+        param_list_str = ', '.join(param_list)
+
+        # Build the body of the method by assigning parameters to self
+        assignments = [f'    self.{name} = {name}' for name in params.keys()]
+        assignments_str = '\n'.join(assignments)
+
+        # Combine everything into the final method string
+        method_str = f'def __init__({param_list_str}):\n{assignments_str}'
+
+        return method_str
