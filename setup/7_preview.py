@@ -72,7 +72,7 @@ for col, (agent_name, implemented) in zip(columns, agents.items()):
     col.markdown(display_status(implemented))
 
 if not agents['Settlement Agent']:
-    st.warning('Settlement Agent is not implemented. It will default to no constraints and no transactino fees.')
+    st.warning('Settlement Agent is not implemented. It will default to no constraints and no transaction fees.')
 if not agents['Queue Agent']:
     st.warning('Queue Agent is not implemented. It will default to a pass-through queue.')
 if not agents['Credit Facility Agent']:
