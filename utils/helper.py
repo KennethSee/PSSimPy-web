@@ -92,6 +92,22 @@ class ClassImplementationModifier():
         self.code = modified_code
 
     @staticmethod
+    def get_first_class_name(class_code):
+        """
+        Analyze the Python code and return the name of the first class defined in it.
+        """
+        try:
+            # Parse the Python code into an abstract syntax tree (AST)
+            tree = ast.parse(class_code)
+            # Look for the first class definition in the AST
+            for node in tree.body:
+                if isinstance(node, ast.ClassDef):
+                    return node.name  # Return the class name
+            return None  # No class found
+        except SyntaxError:
+            return None
+
+    @staticmethod
     def extract_function_code(code: str, function_name: str) -> str:
         """
         Extracts the full chunk of code for a given function name,

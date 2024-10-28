@@ -92,7 +92,6 @@ if st.button("Add Parameter"):
 # Display Parameter Inputs
 for i, param in enumerate(st.session_state["temp_params"]):
     col1, col2 = st.columns(2)
-
     with col1:
         param_name = st.text_input(
             "Parameter Name", 
@@ -139,13 +138,11 @@ if (constraint_implementation['text'] != '') and (
 
     init_implementation = ClassImplementationModifier.generate_init_method({param["name"]: param["default"] for param in st.session_state['temp_params']}, True, "AbstractConstraintHandler")
     # Use exec to dynamically define the new constraint method
-    print(init_implementation)
     local_vars = {}
     exec(init_implementation, globals(), local_vars)
     exec(constraint_implementation['text'], globals(), local_vars)
 
     # overwrite placeholder init and abstract functions
-    print(local_vars)
     CustomConstraintHandler.__init__ = local_vars['__init__']
     CustomConstraintHandler.process_transaction = local_vars['process_transaction']
 

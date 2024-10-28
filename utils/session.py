@@ -3,8 +3,9 @@ import pandas as pd
 import json
 import shutil
 import inspect
+import zipfile
 from pathlib import Path
-from PSSimPy import Bank
+from PSSimPy import Bank, Transaction
 from PSSimPy.constraint_handler import AbstractConstraintHandler, PassThroughHandler
 from PSSimPy.transaction_fee import AbstractTransactionFee, FixedTransactionFee
 from PSSimPy.queues import AbstractQueue, DirectQueue
@@ -202,3 +203,51 @@ def save_simulation_settings(simulation_setting_name: str, include_data: bool=Fa
         shutil.make_archive(f"saved_settings/{simulation_setting_name}", 'zip', settings_folder)
 
         return True
+
+def import_simulation_setting(uploaded_file):
+        with zipfile.ZipFile(uploaded_file) as z:
+                # import parameters
+                if 'static_data.json' in z.namelist():
+                        with z.open('static_data.json') as f:
+                                data = json.load(f)
+                                st.session_state['Parameters'] = data['Parameters']
+                                st.session_state['Random Transactions'] = data['Random Transactions']
+                                st.session_state['Transaction Probability'] = data['Transaction Probability']
+                                st.session_state['Transaction Amount Range'] = data['Transaction Amount Range']
+                                st.session_state['Transaction Fee']['rate'] = data['Transaction Fee Rate']
+
+                # import data
+                if 'data/banks.csv' in z.namelist():
+                        with z.open('data/banks.csv') as f:
+                                df_banks = pd.read_csv(f)
+                                st.session_state['Input Data']['Banks'] = df_banks
+                if 'data/accounts.csv' in z.namelist():
+                        with z.open('data/accounts.csv') as f:
+                                df_accounts = pd.read_csv(f)
+                                st.session_state['Input Data']['Accounts'] = df_accounts
+                if 'data/transactions.csv' in z.namelist():
+                        with z.open('data/transactions.csv') as f:
+                                df_accounts = pd.read_csv(f)
+                                st.session_state['Input Data']['Transactions'] = df_accounts
+
+                # import constraint handler
+                constraint_handler_files = [f for f in z.namelist() if f.startswith('constraint_handler/') and f.endswith('.py')]
+                if constraint_handler_files:
+                        constraint_handler_file = constraint_handler_files[0]
+                        with z.open(constraint_handler_file) as f:
+                                file_content = f.read().decode('utf-8')  # Decode bytes to string
+                                st.code(file_content, language='python')
+
+                                # compile constraint handler class
+                                constraint_handler_class_name = ClassImplementationModifier.get_first_class_name(file_content)
+                                exec_env = {
+                                        'Transaction': Transaction,
+                                        'AbstractConstraintHandler': AbstractConstraintHandler,
+                                }
+                                exec(file_content, globals(), exec_env)
+                                CustomConstraintHandler = exec_env[constraint_handler_class_name]
+
+                                # populate session_state
+                                st.session_state['Constraint Handler']['class'] = CustomConstraintHandler
+                                st.session_state['Constraint Handler']['implementation'] = ClassImplementationModifier.extract_function_code(file_content, 'process_transaction')
+                                st.session_state['Constraint Handler']['params'] = [{'name': name, 'default': default_val} for name, default_val in ClassImplementationModifier.extract_init_params(file_content).items()]

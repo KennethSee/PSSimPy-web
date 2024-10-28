@@ -44,7 +44,7 @@ queue_implementation = code_editor('\n' + old_merged_code, # pad empty first lin
 # save to session state on save
 queue_implementation['text'] = "\n".join(queue_implementation['text'].splitlines()[1:]) # strip first empty line
 if (queue_implementation['text'] != '') and (queue_implementation['text'] != st.session_state['Queue']['implementation']):
-    # initialize transactino fee handler class with provided implementation
+    # initialize transaction fee handler class with provided implementation
     class CustomQueue(AbstractQueue):
 
         def __init__(self):

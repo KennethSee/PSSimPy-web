@@ -126,7 +126,7 @@ if st.button('Begin Simulation'):
 
     st.success('Simulation completed!')
 
-
+st.write('# Export Simulation Settings')
 # Save simulation settings
 SAVE_PATH = "./saved_settings"
 os.makedirs(SAVE_PATH, exist_ok=True)
