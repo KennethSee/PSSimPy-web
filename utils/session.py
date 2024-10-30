@@ -11,7 +11,7 @@ from PSSimPy.transaction_fee import AbstractTransactionFee, FixedTransactionFee
 from PSSimPy.queues import AbstractQueue, DirectQueue
 from PSSimPy.credit_facilities import AbstractCreditFacility, SimplePriced
 
-from utils.helper import initialize_dict_key, replace_whitespace_with_underscore, dict_to_list, ClassImplementationModifier
+from utils.helper import initialize_dict_key, replace_whitespace_with_underscore, dict_to_list, remove_one_indent_level, ClassImplementationModifier
 
 def initialize_session_state_variables():
         # Parameters
@@ -89,6 +89,11 @@ def save_simulation_settings(simulation_setting_name: str, include_data: bool=Fa
                         strategy_name = replace_whitespace_with_underscore(strategy_name)
                         strategy_mod = ClassImplementationModifier(base_bank_code)
                         strategy_mod.replace_class_name(strategy_name)
+                        strategy_mod_init_params = ClassImplementationModifier.generate_init_method(
+                                {'name': None, 'strategy_type': strategy_name},
+                                has_kwargs=True
+                        )
+                        strategy_mod.replace_function('__init__', strategy_mod_init_params)
                         strategy_mod.replace_function('strategy', value['implementation'])
                         strategy_mod.insert_import_statement('from PSSimPy.queues import AbstractQueue')
                         # Save the generated code to a file
@@ -231,15 +236,33 @@ def import_simulation_setting(uploaded_file):
                                 st.session_state['Input Data']['Transactions'] = df_accounts
 
                 # import bank strategies
-                
+                bank_files = [b for b in z.namelist() if b.startswith('bank_strategies/') and b.endswith('.py')]
+                if bank_files:
+                        for bank_file in bank_files:
+                                with z.open(bank_file) as f:
+                                        file_content = f.read().decode('utf-8')  # Decode bytes to string
+                                        st.code(file_content, language='python')
+
+                                        # compile bank class
+                                        bank_class_name = ClassImplementationModifier.get_first_class_name(file_content)
+                                        exec_env = {'AbstractQueue': AbstractQueue}
+                                        exec(file_content, globals(), exec_env)
+                                        CustomBank = exec_env[bank_class_name]
+
+                                        # populate session state
+                                        st.session_state['Bank Strategies'][bank_class_name] = {
+                                                'class': CustomBank,
+                                                'implementation': remove_one_indent_level(ClassImplementationModifier.extract_function_code(file_content, 'strategy'))
+                                        }
+
+
 
                 # import constraint handler
                 constraint_handler_files = [f for f in z.namelist() if f.startswith('constraint_handler/') and f.endswith('.py')]
                 if constraint_handler_files:
                         constraint_handler_file = constraint_handler_files[0]
                         with z.open(constraint_handler_file) as f:
-                                file_content = f.read().decode('utf-8')  # Decode bytes to string
-                                st.code(file_content, language='python')
+                                file_content = f.read().decode('utf-8')
 
                                 # compile constraint handler class
                                 constraint_handler_class_name = ClassImplementationModifier.get_first_class_name(file_content)
@@ -252,7 +275,7 @@ def import_simulation_setting(uploaded_file):
 
                                 # populate session_state
                                 st.session_state['Constraint Handler']['class'] = CustomConstraintHandler
-                                st.session_state['Constraint Handler']['implementation'] = ClassImplementationModifier.extract_function_code(file_content, 'process_transaction')
+                                st.session_state['Constraint Handler']['implementation'] = remove_one_indent_level(ClassImplementationModifier.extract_function_code(file_content, 'process_transaction'))
                                 st.session_state['Constraint Handler']['params'] = dict_to_list(ClassImplementationModifier.extract_init_params(file_content), 'name', 'default')
 
                 

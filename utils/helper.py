@@ -75,6 +75,27 @@ def dict_to_list(d: dict, key_name, val_name):
     return [{key_name: key, val_name: val} for key, val in d.items()]
 
 
+def remove_one_indent_level(text):
+    """
+    Removes one level of leading whitespace (tabs or spaces) from each line in a multi-line string.
+    The amount of whitespace removed is the smallest leading indentation found across all non-empty lines.
+    """
+    # Split the text into lines
+    lines = text.splitlines()
+
+    # Find the minimum leading whitespace across all non-empty lines
+    indent_levels = [
+        len(re.match(r"^\s*", line).group()) for line in lines if line.strip()
+    ]
+    min_indent = min(indent_levels) if indent_levels else 0
+
+    # Remove the minimum indentation from each line
+    dedented_lines = [line[min_indent:] for line in lines]
+
+    # Join the lines back together
+    return "\n".join(dedented_lines)
+
+
 class ClassImplementationModifier():
 
     def __init__(self, code: str):
@@ -337,7 +358,8 @@ class ClassImplementationModifier():
     def generate_init_method(
         params: dict, 
         is_inherited: bool = False, 
-        inherited_abstract_class_name: str = None
+        inherited_abstract_class_name: str = None,
+        has_kwargs: bool = False
     ) -> str:
         """
         Generates an __init__ method dynamically with given parameters.
@@ -366,6 +388,8 @@ class ClassImplementationModifier():
         optional_params = [
             f"{k}={format_value(v)}" for k, v in params.items() if v is not None
         ]
+        if has_kwargs:
+            optional_params.append('**kwargs')
 
         # Combine required and optional parameters into a parameter list
         all_params = ", ".join(required_params + optional_params)
@@ -379,6 +403,11 @@ class ClassImplementationModifier():
         # Add assignments for all parameters
         for param in params.keys():
             body_lines.append(f"self.{param} = {param}")
+
+        # Add kwargs assignment
+        if has_kwargs:
+            body_lines.append("for key, value in kwargs.items():")
+            body_lines.append("    setattr(self, key, value)")
 
         # Join the body lines with proper indentation
         body = "\n    ".join(body_lines)
