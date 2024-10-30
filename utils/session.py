@@ -11,7 +11,7 @@ from PSSimPy.transaction_fee import AbstractTransactionFee, FixedTransactionFee
 from PSSimPy.queues import AbstractQueue, DirectQueue
 from PSSimPy.credit_facilities import AbstractCreditFacility, SimplePriced
 
-from utils.helper import initialize_dict_key, replace_whitespace_with_underscore, ClassImplementationModifier
+from utils.helper import initialize_dict_key, replace_whitespace_with_underscore, dict_to_list, ClassImplementationModifier
 
 def initialize_session_state_variables():
         # Parameters
@@ -230,6 +230,9 @@ def import_simulation_setting(uploaded_file):
                                 df_accounts = pd.read_csv(f)
                                 st.session_state['Input Data']['Transactions'] = df_accounts
 
+                # import bank strategies
+                
+
                 # import constraint handler
                 constraint_handler_files = [f for f in z.namelist() if f.startswith('constraint_handler/') and f.endswith('.py')]
                 if constraint_handler_files:
@@ -250,4 +253,6 @@ def import_simulation_setting(uploaded_file):
                                 # populate session_state
                                 st.session_state['Constraint Handler']['class'] = CustomConstraintHandler
                                 st.session_state['Constraint Handler']['implementation'] = ClassImplementationModifier.extract_function_code(file_content, 'process_transaction')
-                                st.session_state['Constraint Handler']['params'] = [{'name': name, 'default': default_val} for name, default_val in ClassImplementationModifier.extract_init_params(file_content).items()]
+                                st.session_state['Constraint Handler']['params'] = dict_to_list(ClassImplementationModifier.extract_init_params(file_content), 'name', 'default')
+
+                

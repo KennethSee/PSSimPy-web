@@ -71,6 +71,10 @@ def format_value(value):
     return repr(value)
 
 
+def dict_to_list(d: dict, key_name, val_name):
+    return [{key_name: key, val_name: val} for key, val in d.items()]
+
+
 class ClassImplementationModifier():
 
     def __init__(self, code: str):
