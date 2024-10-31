@@ -4,12 +4,15 @@ import json
 import shutil
 import inspect
 import zipfile
+from typing import Tuple, List, Set
+from sortedcontainers import SortedList
 from pathlib import Path
-from PSSimPy import Bank, Transaction
+from PSSimPy import Bank, Account, Transaction
 from PSSimPy.constraint_handler import AbstractConstraintHandler, PassThroughHandler
 from PSSimPy.transaction_fee import AbstractTransactionFee, FixedTransactionFee
 from PSSimPy.queues import AbstractQueue, DirectQueue
 from PSSimPy.credit_facilities import AbstractCreditFacility, SimplePriced
+from PSSimPy.utils import min_balance_maintained
 
 from utils.helper import initialize_dict_key, replace_whitespace_with_underscore, dict_to_list, remove_one_indent_level, ClassImplementationModifier
 
@@ -241,7 +244,7 @@ def import_simulation_setting(uploaded_file):
                         for bank_file in bank_files:
                                 with z.open(bank_file) as f:
                                         file_content = f.read().decode('utf-8')  # Decode bytes to string
-                                        st.code(file_content, language='python')
+                                        # st.code(file_content, language='python')
 
                                         # compile bank class
                                         bank_class_name = ClassImplementationModifier.get_first_class_name(file_content)
@@ -269,6 +272,7 @@ def import_simulation_setting(uploaded_file):
                                 exec_env = {
                                         'Transaction': Transaction,
                                         'AbstractConstraintHandler': AbstractConstraintHandler,
+                                        'min_balance_maintained': min_balance_maintained
                                 }
                                 exec(file_content, globals(), exec_env)
                                 CustomConstraintHandler = exec_env[constraint_handler_class_name]
@@ -278,4 +282,72 @@ def import_simulation_setting(uploaded_file):
                                 st.session_state['Constraint Handler']['implementation'] = remove_one_indent_level(ClassImplementationModifier.extract_function_code(file_content, 'process_transaction'))
                                 st.session_state['Constraint Handler']['params'] = dict_to_list(ClassImplementationModifier.extract_init_params(file_content), 'name', 'default')
 
-                
+                # import transaction fee handler
+                transaction_fee_handler_files = [f for f in z.namelist() if f.startswith('transaction_fee_handler/') and f.endswith('.py')]
+                if transaction_fee_handler_files:
+                        transaction_fee_handler_file = transaction_fee_handler_files[0]
+                        with z.open(transaction_fee_handler_file) as f:
+                                file_content = f.read().decode('utf-8')
+
+                                # compile transaction fee handler class
+                                transaction_fee_handler_class_name = ClassImplementationModifier.get_first_class_name(file_content)
+                                exec_env = {'AbstractTransactionFee': AbstractTransactionFee}
+                                exec(file_content, globals(), exec_env)
+                                CustomTransactionFee = exec_env[transaction_fee_handler_class_name]
+
+                                # populate session_state
+                                st.session_state['Transaction Fee']['class'] = CustomTransactionFee
+                                st.session_state['Transaction Fee']['implementation'] = remove_one_indent_level(ClassImplementationModifier.extract_function_code(file_content, 'calculate_fee'))
+                                st.session_state['Transaction Fee']['params'] = dict_to_list(ClassImplementationModifier.extract_init_params(file_content), 'name', 'default')
+
+                # import queue
+                queue_files = [f for f in z.namelist() if f.startswith('queue/') and f.endswith('.py')]
+                if queue_files:
+                        queue_file = queue_files[0]
+                        with z.open(queue_file) as f:
+                                file_content = f.read().decode('utf-8')
+
+                                # compile queue class
+                                queue_class_name = ClassImplementationModifier.get_first_class_name(file_content)
+                                exec_env = {
+                                        'AbstractQueue': AbstractQueue,
+                                        'Transaction': Transaction,
+                                        'Tuple': Tuple,
+                                        'List': List,
+                                        'Set': Set,
+                                        'SortedList': SortedList,
+                                        'min_balance_maintained': min_balance_maintained
+                                }
+                                exec(file_content, globals(), exec_env)
+                                CustomQueue = exec_env[queue_class_name]
+
+                                # populate session_state
+                                sorting_logic_code = remove_one_indent_level(ClassImplementationModifier.extract_function_code(file_content, 'sorting_logic'))
+                                dequeue_criteria_code = remove_one_indent_level(ClassImplementationModifier.extract_function_code(file_content, 'dequeue_criteria'))
+                                st.session_state['Queue']['class'] = CustomQueue
+                                st.session_state['Queue']['implementation'] = sorting_logic_code + '\n\n' + dequeue_criteria_code
+                                st.session_state['Queue']['params'] = dict_to_list(ClassImplementationModifier.extract_init_params(file_content), 'name', 'default')
+
+                # import credit facility
+                credit_facility_files = [f for f in z.namelist() if f.startswith('credit_facility/') and f.endswith('.py')]
+                if credit_facility_files:
+                        credit_facility_file = credit_facility_files[0]
+                        with z.open(credit_facility_file) as f:
+                                file_content = f.read().decode('utf-8')
+
+                                # compile credit facility class
+                                credit_facility_class_name = ClassImplementationModifier.get_first_class_name(file_content)
+                                exec_env = {
+                                        'AbstractCreditFacility': AbstractCreditFacility,
+                                        'Account': Account
+                                }
+                                exec(file_content, globals(), exec_env)
+                                CustomCreditFacility = exec_env[credit_facility_class_name]
+
+                                # populate session state
+                                calculate_fee_code = remove_one_indent_level(ClassImplementationModifier.extract_function_code(file_content, 'calculate_fee'))
+                                lend_credit_code = remove_one_indent_level(ClassImplementationModifier.extract_function_code(file_content, 'lend_credit'))
+                                collect_repayment_code = remove_one_indent_level(ClassImplementationModifier.extract_function_code(file_content, 'collect_repayment'))
+                                st.session_state['Credit Facility']['class'] = CustomCreditFacility
+                                st.session_state['Credit Facility']['implementation'] = calculate_fee_code + '\n\n' + lend_credit_code + '\n\n' + collect_repayment_code
+                                st.session_state['Credit Facility']['params'] = dict_to_list(ClassImplementationModifier.extract_init_params(file_content), 'name', 'default')

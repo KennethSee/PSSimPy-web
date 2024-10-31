@@ -6,6 +6,7 @@ from PSSimPy.constraint_handler import AbstractConstraintHandler, PassThroughHan
 from PSSimPy.transaction_fee import AbstractTransactionFee, FixedTransactionFee
 from PSSimPy.transaction import Transaction
 from PSSimPy.account import Account
+from PSSimPy.utils import min_balance_maintained
 from code_editor import code_editor
 from typing import Union, Dict
 
@@ -138,13 +139,17 @@ if (constraint_implementation['text'] != '') and (
 
     init_implementation = ClassImplementationModifier.generate_init_method({param["name"]: param["default"] for param in st.session_state['temp_params']}, True, "AbstractConstraintHandler")
     # Use exec to dynamically define the new constraint method
-    local_vars = {}
-    exec(init_implementation, globals(), local_vars)
-    exec(constraint_implementation['text'], globals(), local_vars)
+    exec_env = {
+            'Transaction': Transaction,
+            'AbstractConstraintHandler': AbstractConstraintHandler,
+            'min_balance_maintained': min_balance_maintained
+    }
+    exec(init_implementation, globals(), exec_env)
+    exec(constraint_implementation['text'], globals(), exec_env)
 
     # overwrite placeholder init and abstract functions
-    CustomConstraintHandler.__init__ = local_vars['__init__']
-    CustomConstraintHandler.process_transaction = local_vars['process_transaction']
+    CustomConstraintHandler.__init__ = exec_env['__init__']
+    CustomConstraintHandler.process_transaction = exec_env['process_transaction']
 
     # commit to session state
     st.session_state['Constraint Handler'] = {'class': CustomConstraintHandler, 'implementation': constraint_implementation['text'], 'params': copy(st.session_state['temp_params'])}
