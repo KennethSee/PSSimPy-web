@@ -84,7 +84,7 @@ if st.button('Register Input Data'):
             st.error('Please upload Transactions data.')
     
     if not register_fail:
-        st.session_state['Input Data'] = {'Banks': df_banks, 'Accounts': df_accounts}
+        st.session_state['Input Data'] = {'Banks': df_banks, 'Accounts': df_accounts, 'Transactions': None}
         if st.session_state['random_transactions_flag']:
             st.session_state['Random Transactions'] = True
             st.session_state['Transaction Probability'] = txn_arrival_prob
