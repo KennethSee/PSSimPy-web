@@ -124,13 +124,16 @@ if (facility_implementation['text'] != '') and (facility_implementation['text'] 
             pass
 
     # Use exec to dynamically define the new methods
-    local_vars = {}
-    exec(facility_implementation['text'], globals(), local_vars)
+    exec_env = {
+            'AbstractCreditFacility': AbstractCreditFacility,
+            'Account': Account
+    }
+    exec(facility_implementation['text'], globals(), exec_env)
 
     # add abstract function implementation
-    CustomCreditFacility.calculate_fee = local_vars['calculate_fee']
-    CustomCreditFacility.lend_credit = local_vars['lend_credit']
-    CustomCreditFacility.collect_repayment = local_vars['collect_repayment']
+    CustomCreditFacility.calculate_fee = exec_env['calculate_fee']
+    CustomCreditFacility.lend_credit = exec_env['lend_credit']
+    CustomCreditFacility.collect_repayment = exec_env['collect_repayment']
 
     # commit to session state
     st.session_state['Credit Facility']['class'] = CustomCreditFacility

@@ -13,7 +13,7 @@ uploaded_file = st.file_uploader(
 # Add an "Import" button to trigger the import logic
 if st.button("Import Simulation Setting"):
     if uploaded_file is not None:
-        st.success('yay!')
+        st.success('Settings successfully imported!')
         import_simulation_setting(uploaded_file)
     else:
         st.error("No file selected. Please upload a valid .zip file.")

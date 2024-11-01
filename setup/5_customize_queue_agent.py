@@ -1,9 +1,11 @@
 import streamlit as st
 import inspect
 import textwrap
-from typing import Tuple
+from typing import Tuple, List, Set
+from sortedcontainers import SortedList
 from code_editor import code_editor
 from PSSimPy.queues import AbstractQueue, DirectQueue, FIFOQueue, PriorityQueue
+from PSSimPy.utils import min_balance_maintained
 from PSSimPy import Transaction
 
 from utils.object import SUBMIT_BUTTON
@@ -51,12 +53,20 @@ if (queue_implementation['text'] != '') and (queue_implementation['text'] != st.
             super().__init__()
 
     # Use exec to dynamically define the new constraint method
-    local_vars = {}
-    exec(queue_implementation['text'], globals(), local_vars)
+    exec_env = {
+            'AbstractQueue': AbstractQueue,
+            'Transaction': Transaction,
+            'Tuple': Tuple,
+            'List': List,
+            'Set': Set,
+            'SortedList': SortedList,
+            'min_balance_maintained': min_balance_maintained
+    }
+    exec(queue_implementation['text'], globals(), exec_env)
 
     # add abstract function implementation
-    CustomQueue.sorting_logic = local_vars['sorting_logic']
-    CustomQueue.dequeue_criteria = local_vars['dequeue_criteria']
+    CustomQueue.sorting_logic = exec_env['sorting_logic']
+    CustomQueue.dequeue_criteria = exec_env['dequeue_criteria']
 
     # commit to session state
     st.session_state['Queue']['class'] = CustomQueue
