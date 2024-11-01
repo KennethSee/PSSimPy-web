@@ -123,14 +123,17 @@ if (facility_implementation['text'] != '') and (facility_implementation['text'] 
         def collect_repayment(self, account):
             pass
 
+    init_implementation = ClassImplementationModifier.generate_init_method({param["name"]: param["default"] for param in st.session_state['temp_facility_params']}, True, "AbstractCreditFacility")
     # Use exec to dynamically define the new methods
     exec_env = {
             'AbstractCreditFacility': AbstractCreditFacility,
             'Account': Account
     }
+    exec(init_implementation, globals(), exec_env)
     exec(facility_implementation['text'], globals(), exec_env)
 
     # add abstract function implementation
+    CustomCreditFacility.__init__ = exec_env['__init__']
     CustomCreditFacility.calculate_fee = exec_env['calculate_fee']
     CustomCreditFacility.lend_credit = exec_env['lend_credit']
     CustomCreditFacility.collect_repayment = exec_env['collect_repayment']
