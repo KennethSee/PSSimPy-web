@@ -11,7 +11,7 @@ from code_editor import code_editor
 from typing import Union, Dict
 
 from utils.object import SUBMIT_BUTTON
-from utils.helper import get_function_header, ClassImplementationModifier
+from utils.helper import get_function_header, add_parameter_row, ClassImplementationModifier
 from utils.date_time import is_24_hour_format
 
 
@@ -23,12 +23,6 @@ if "param_counter" not in st.session_state:
 if "current_constraint_handler" not in st.session_state:
     st.session_state["current_constraint_handler"] = ""
 
-def add_parameter_row():
-    """Add a new parameter row."""
-    st.session_state["temp_params"].append(
-        {"name": "", "default": None}
-    )
-    st.session_state["param_counter"] += 1
 
 st.write('# Customize Settlement Agent')
 

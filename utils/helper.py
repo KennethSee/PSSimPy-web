@@ -96,6 +96,14 @@ def remove_one_indent_level(text):
     return "\n".join(dedented_lines)
 
 
+def add_parameter_row():
+    """Add a new parameter row."""
+    st.session_state["temp_params"].append(
+        {"name": "", "default": None}
+    )
+    st.session_state["param_counter"] += 1
+
+
 class ClassImplementationModifier():
 
     def __init__(self, code: str):
