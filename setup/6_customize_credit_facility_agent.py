@@ -1,7 +1,7 @@
 import streamlit as st
 import inspect
 import textwrap
-from copy import copy
+from copy import copy, deepcopy
 from code_editor import code_editor
 from PSSimPy.credit_facilities import AbstractCreditFacility, SimpleCollateralized, SimplePriced
 from PSSimPy import Account
@@ -15,10 +15,9 @@ if "temp_facility_params" not in st.session_state:
 if "facility_param_counter" not in st.session_state:
     st.session_state["facility_param_counter"] = 0  # Counter for unique keys
 if "current_facility" not in st.session_state:
-    st.session_state["current_facility"] = ""
+    st.session_state["current_facility"] = 'Placeholder'
 
 st.write('# Customize Credit Facility Agent')
-
 ootb_facility_templates = {'Simple Priced': SimplePriced, 'Simple Collateralized': SimpleCollateralized}
 facility_select = st.selectbox('Select credit facility template', ['', 'Simple Priced', 'Simple Collateralized', '(No Template)'])
 
@@ -38,7 +37,7 @@ if facility_select == '(No Template)':
     old_merged_code = f"{old_calculate_fee_code}\n\n{old_lend_credit_code}\n\n{old_collect_repayment_code}"
 elif facility_select == '':
     if st.session_state["current_facility"] != facility_select:
-        st.session_state["temp_facility_params"] = st.session_state['Credit Facility']['params'] # reset
+        st.session_state["temp_facility_params"] = deepcopy(st.session_state['Credit Facility']['params']) # reset
         st.session_state["facility_param_counter"] = 0
     st.session_state["current_facility"] = facility_select
     # display stored implemented code, or display blank code canvas if not implemented yet
@@ -74,7 +73,7 @@ st.write("### Custom Parameters")
 
 # Add Parameter Button
 if st.button("Add Parameter"):
-    add_parameter_row()
+    add_parameter_row('temp_facility_params', 'facility_param_counter')
 
 # Display Parameter Inputs
 for i, param in enumerate(st.session_state["temp_facility_params"]):
@@ -89,10 +88,11 @@ for i, param in enumerate(st.session_state["temp_facility_params"]):
         st.session_state["temp_facility_params"][i]["name"] = param_name
 
     with col2:
+        print(st.session_state["temp_facility_params"])
         default_value = st.text_input(
             "Default Value (optional)", 
             key=f"default_value_{i}", 
-            value=param["default"] or "", 
+            value=str(param["default"]) if isinstance(param["default"], (dict, list)) else param["default"] or "", 
             placeholder="Enter default value"
         )
         # Store None if the input is blank

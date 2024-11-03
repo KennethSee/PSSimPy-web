@@ -194,6 +194,7 @@ def save_simulation_settings(simulation_setting_name: str, include_data: bool=Fa
 
                 credit_facility_mod.insert_import_statement('from PSSimPy import Account')
                 credit_facility_mod.insert_import_statement('from PSSimPy.credit_facilities import AbstractCreditFacility')
+                credit_facility_mod.insert_import_statement('from typing import List, Dict')
                 # Save the generated code to a file
                 with open(f"{settings_folder}/credit_facility/custom_credit_facility.py", "w") as f:
                         f.write(credit_facility_mod.code)

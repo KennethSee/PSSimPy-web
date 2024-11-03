@@ -21,7 +21,7 @@ if "temp_params" not in st.session_state:
 if "param_counter" not in st.session_state:
     st.session_state["param_counter"] = 0  # Counter for unique keys
 if "current_constraint_handler" not in st.session_state:
-    st.session_state["current_constraint_handler"] = ""
+    st.session_state["current_constraint_handler"] = 'Placeholder'
 
 
 st.write('# Customize Settlement Agent')
@@ -82,7 +82,7 @@ st.write("### Custom Parameters")
 
 # Add Parameter Button
 if st.button("Add Parameter"):
-    add_parameter_row()
+    add_parameter_row('temp_params', 'param_counter')
 
 # Display Parameter Inputs
 for i, param in enumerate(st.session_state["temp_params"]):

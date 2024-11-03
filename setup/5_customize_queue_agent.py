@@ -52,6 +52,12 @@ if (queue_implementation['text'] != '') and (queue_implementation['text'] != st.
         def __init__(self):
             super().__init__()
 
+        def sorting_logic(queue_item):
+            pass
+
+        def dequeue_criteria(queue_item):
+            pass
+
     # Use exec to dynamically define the new constraint method
     exec_env = {
             'AbstractQueue': AbstractQueue,

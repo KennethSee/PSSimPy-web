@@ -94,6 +94,7 @@ if st.button('Begin Simulation'):
             'eod_clear_queue': st.session_state['Parameters']['EOD Clear Queue'],
             'eod_force_settlement': st.session_state['Parameters']['EOD Force Settlement'],
             'constraint_handler': st.session_state['Constraint Handler']['class'](),
+            'queue': st.session_state['Queue']['class'](),
             'credit_facility': st.session_state['Credit Facility']['class'](),
             'transaction_fee_handler': st.session_state['Transaction Fee']['class'](),
             'transaction_fee_rate': st.session_state['Transaction Fee']['rate'],

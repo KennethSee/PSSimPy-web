@@ -3,6 +3,7 @@ import inspect
 import textwrap
 import re
 import ast
+import streamlit as st
 from collections import OrderedDict
 
 def initialize_dict_key(dictionary: dict, key, initialization_value):
@@ -42,24 +43,36 @@ def replace_whitespace_with_underscore(input_string):
 
 
 def format_value(value):
-    """Format value: Convert strings to numbers if possible, otherwise use repr()."""
-    # Try to convert to an integer or float if the value is a string
+    """Format value: Convert strings to numbers, lists, or dicts if possible, handle mutable defaults, otherwise use repr()."""
+    # Handle dictionaries and lists directly if they are already those types
+    if isinstance(value, dict):
+        print(f"{value} is a dictionary, preserving its contents")
+        return repr(value)
+    elif isinstance(value, list):
+        print(f"{value} is a list, preserving its contents")
+        return repr(value)
+
+    # Try to interpret the string as a Python literal (e.g., list, dict, int, float)
     if isinstance(value, str):
         try:
-            # First, try to convert to an integer
-            int_value = int(value)
-            print(f"'{value}' is converted to int: {int_value}")
-            return int_value
-        except ValueError:
-            try:
-                # If that fails, try to convert to a float
-                float_value = float(value)
-                print(f"'{value}' is converted to float: {float_value}")
-                return float_value
-            except ValueError:
-                # If neither int nor float conversion works, treat as a string
-                print(f"'{value}' is not a number, keeping as string")
-                return repr(value)
+            # Attempt to parse the string as a Python literal
+            literal_value = ast.literal_eval(value)
+            if isinstance(literal_value, (int, float, dict, list)):
+                print(f"'{value}' is converted to {type(literal_value).__name__}: {literal_value}")
+                return literal_value
+        except (ValueError, SyntaxError):
+            # If parsing fails, fall back to treating it as a regular string
+            print(f"'{value}' is not a number, list, or dictionary, keeping as string")
+            return repr(value)
+
+    # Return as-is if already a number (int or float)
+    if isinstance(value, (int, float)):
+        print(f"{value} is a number")
+        return value
+
+    # For other types, use repr()
+    print(f"{value} is of unsupported type, using repr()")
+    return repr(value)
 
     # Return as-is if already a number (int or float)
     if isinstance(value, (int, float)):
@@ -96,12 +109,12 @@ def remove_one_indent_level(text):
     return "\n".join(dedented_lines)
 
 
-def add_parameter_row():
+def add_parameter_row(temp_param_name: str, temp_param_counter: str):
     """Add a new parameter row."""
-    st.session_state["temp_params"].append(
+    st.session_state[temp_param_name].append(
         {"name": "", "default": None}
     )
-    st.session_state["param_counter"] += 1
+    st.session_state[temp_param_counter] += 1
 
 
 class ClassImplementationModifier():
