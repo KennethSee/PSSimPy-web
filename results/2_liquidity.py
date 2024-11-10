@@ -55,7 +55,7 @@ def calculate_turnover_ratios(transactions_df, balances_df, opening_time, closin
     return turnover_df
 
 # Average Payment Delay Calculation Function
-def calculate_avg_pmt_delay(transactions_df, opening_time, closing_time, processing_window, num_days):
+def calculate_avg_pmt_delay(transactions_df, opening_time, closing_time, processing_window, num_days, delay_from_arrival=False):
     # Create an empty list to store the results
     results = []
 
@@ -79,10 +79,14 @@ def calculate_avg_pmt_delay(transactions_df, opening_time, closing_time, process
                 )
             ]
             
+            # select whether to calculate delay from time of arrival or time of payment submission
+            transaction_start_times = filtered_transactions['time'] if delay_from_arrival else filtered_transactions['submission_time']
+            transaction_start_days = filtered_transactions['day'] if delay_from_arrival else filtered_transactions['submission_day']
+
             payment_delay_metric = average_payment_delay(
-                filtered_transactions['submission_time'].tolist(), 
+                transaction_start_times.tolist(), 
                 filtered_transactions['settlement_time'].tolist(), 
-                filtered_transactions['submission_day'].tolist(),
+                transaction_start_days.tolist(),
                 filtered_transactions['settlement_day'].tolist(),
                 filtered_transactions['amount'].tolist(),
                 True
@@ -146,7 +150,9 @@ st.altair_chart(facet_chart, use_container_width=True)
 
 st.markdown("## Average Payment Delay")
 
-df_pmt_delay = calculate_avg_pmt_delay(transactions_df, opening_time, closing_time, processing_window, num_days)
+delay_from_arrival = st.checkbox('Caclculate delay from time of transaction arrival', value=False,)
+
+df_pmt_delay = calculate_avg_pmt_delay(transactions_df, opening_time, closing_time, processing_window, num_days, delay_from_arrival=delay_from_arrival)
 df_pmt_delay = df_pmt_delay.sort_values(by=['day', 'time'])
 # print(df_pmt_delay)
 # # Create the Altair chart
