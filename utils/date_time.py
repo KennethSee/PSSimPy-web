@@ -89,3 +89,10 @@ def get_time_windows(start_time: str, end_time: str, interval_minutes: int) -> l
     # always add closing time as well
     time_windows.append(end_time)
     return time_windows
+
+
+def is_time_earlier_or_equal(time1: str, time2: str) -> bool:
+    format = "%H:%M"
+    time1_obj = datetime.strptime(time1, format)
+    time2_obj = datetime.strptime(time2, format)
+    return time1_obj <= time2_obj

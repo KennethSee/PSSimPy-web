@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-from utils.date_time import add_minutes_to_time, get_time_windows
+from utils.date_time import add_minutes_to_time, get_time_windows, is_time_earlier_or_equal
 from utils.indicator import turnover_ratio, average_payment_delay
 
 dynamic_width = max(150, 900/st.session_state['Parameters']['Number of Days'])
@@ -22,9 +22,10 @@ def calculate_turnover_ratios(transactions_df, balances_df, opening_time, closin
             # Filter transactions up to the current time window
             filtered_transactions = transactions_df[
                 (transactions_df['day'] == day) & 
-                (transactions_df['time'] <= time_window) & 
+                (transactions_df['time'].apply(lambda t: is_time_earlier_or_equal(t, time_window))) &
                 (transactions_df['status'] == 'Success')
             ]
+
             
             # Sum of all successful payments settled
             total_payments_settled = filtered_transactions['amount'].sum()
@@ -63,14 +64,14 @@ def calculate_avg_pmt_delay(transactions_df, opening_time, closing_time, process
     for day in range(1, num_days + 1):
         # Get the time windows for the day
         time_windows = get_time_windows(opening_time, closing_time, processing_window)
-        
+    
         # For each time window, calculate the average payment delay
         for i, time_window in enumerate(time_windows):
             # Filter transactions up to the current time window
             filtered_transactions = transactions_df[
                 (
                     (transactions_df['day'] == day) & 
-                    (transactions_df['time'] <= time_window) & 
+                    (transactions_df['time'].apply(lambda t: is_time_earlier_or_equal(t, time_window))) &
                     (transactions_df['status'] == 'Success')
                 ) |
                 (

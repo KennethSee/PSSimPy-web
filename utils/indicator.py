@@ -49,23 +49,13 @@ def average_payment_delay(submission_times, settlement_times, submission_days=No
     Returns
     -------
     float
-        The (weighted) average payment delay in minutes.
+        The (weighted) average payment delay in minutes. Returns 0.0 if total weight is zero.
 
     Raises
     ------
     ValueError
         If the lengths of input lists do not match.
         If any settlement time is earlier than the corresponding submission time.
-
-    Example
-    -------
-    >>> submission_times = ['08:00', '09:30', '16:00']
-    >>> settlement_times = ['08:30', '10:00', '09:00']
-    >>> submission_days = [0, 0, 0]
-    >>> settlement_days = [0, 0, 1]
-    >>> amounts = [100, 200, 300]
-    >>> calculate_average_payment_delay(submission_times, settlement_times, submission_days, settlement_days, amounts, weighted=True)
-    300.0
     """
     N = len(submission_times)
     if N != len(settlement_times):
@@ -105,5 +95,6 @@ def average_payment_delay(submission_times, settlement_times, submission_days=No
         else:
             total_delay += delay_in_minutes
 
-    average_delay = total_delay / total_weight
+    # Safely calculate the average delay, returning 0.0 if total_weight is zero
+    average_delay = total_delay / total_weight if total_weight != 0 else 0.0
     return average_delay
