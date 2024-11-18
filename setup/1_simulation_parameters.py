@@ -9,8 +9,8 @@ opening_time = st.text_input('Opening Time', value='08:00', max_chars=5, placeho
 closing_time = st.text_input('Closing Time', value='17:00', max_chars=5, placeholder='HH:mm')
 processing_window = st.number_input('Processing Window (minutes)', min_value=1, value=15)
 num_days = st.number_input('Number of Days', min_value=1, value=1)
-eod_clear_queue = st.checkbox('EOD Clear Queue')
-eod_force_settlement = st.checkbox('EOD Force Settlement')
+eod_clear_queue = st.checkbox('EOD Clear Queue', help='If checked, transactions that are still in the queue are at the end of the day are cancelled.')
+eod_force_settlement = st.checkbox('EOD Force Settlement', help='If checked, all outstanding transactions at the end of the day are forcibly settled.')
 
 # Collapsible section for parameter definitions
 with st.expander("Help?"):
