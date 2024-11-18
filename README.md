@@ -1,5 +1,5 @@
 # PSSimPy-web
-PSSimPy-Web is a web-based application built on the PSSimPy Python library (version 0.1.4). It provides a simulation framework for modeling and analyzing Large-Value Payment Systems (LVPS) with agent-based modeling. This tool is designed for researchers, policymakers, and financial institutions to evaluate the implications of design decisions.
+PSSimPy-Web is a web-based simulator built on the [PSSimPy Python library](https://github.com/KennethSee/PSSimPy) (version 0.1.4). It provides a simulation framework for modeling and analyzing Large-Value Payment Systems (LVPS) with agent-based modeling. This tool is designed for researchers, policymakers, and financial institutions to evaluate the implications of design decisions.
 
 ## Usage
 ### Clone the Repository
