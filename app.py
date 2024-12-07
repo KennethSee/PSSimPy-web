@@ -39,7 +39,7 @@ pg = st.navigation(
     {
         "Landing": [landing_page],
         "Setup": [setup_parameters_page, setup_input_page, setup_customize_agents_page, setup_customize_settlement_agent_page, setup_customize_queue_page, setup_customize_credit_facility_page, setup_preview_page],
-        "Reulsts": [results_raw_page, results_liquidity_page, results_credit_usage_page]
+        "Results": [results_raw_page, results_liquidity_page, results_credit_usage_page]
     }
 )
 st.set_page_config(
