@@ -1,6 +1,23 @@
 # PSSimPy-web
 PSSimPy-Web is a web-based simulator built on the [PSSimPy Python library](https://github.com/KennethSee/PSSimPy) (version 0.1.4). It provides a simulation framework for modeling and analyzing Large-Value Payment Systems (LVPS) with agent-based modeling. This tool is designed for researchers, policymakers, and financial institutions to evaluate the implications of design decisions.
 
+## Citation
+
+We would appreciate it if you cited our paper if you have used PSSimPy web or any of its core ideas in your research:
+
+>See, K., Garcia, N. M., & Xiaofan, L. (2025). Simulating Blockchain Applications in Large-Value Payment Systems through Agent-Based Modeling. _Proceedings of the 24th International Conference on Autonomous Agents and Multiagent Systems (AAMAS)_. International Conference on Autonomous Agents and Multiagent Systems, Detroit, Michigan, USA.
+
+```BibTeX
+% BibTeX citation
+@inproceedings{...,
+  title={Simulating Blockchain Applications in Large-Value Payment Systems through Agent-Based Modeling},
+  author={See, Kenneth and Garcia, Nicholas MacGregor and Li, Xiaofan},
+  booktitle={Proceedings of the 24th International Conference on Autonomous Agents and Multiagent Systems (AAMAS)},
+  year={2025},
+  address={Detroit, Michigan, USA}
+}
+```
+
 ## Usage
 ### Clone the Repository
 ```bash
