@@ -14,6 +14,7 @@ We would appreciate it if you cited our paper if you have used PSSimPy web or an
   author={See, Kenneth and Garcia, Nicholas MacGregor and Li, Xiaofan},
   booktitle={Proceedings of the 24th International Conference on Autonomous Agents and Multiagent Systems (AAMAS)},
   year={2025},
+  publisher={International Foundation for Autonomous Agents and Multiagent Systems},
   address={Detroit, Michigan, USA}
 }
 ```
