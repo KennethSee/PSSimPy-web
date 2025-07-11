@@ -5,7 +5,7 @@ PSSimPy-Web is a web-based simulator built on the [PSSimPy Python library](https
 
 We would appreciate it if you cited [our paper](https://www.ifaamas.org/Proceedings/aamas2025/pdfs/p3047.pdf) if you have used PSSimPy web or any of its core ideas in your research:
 
->See, K., Garcia, N. M., & Li, X. (2025). Simulating Blockchain Applications in Large-Value Payment Systems through Agent-Based Modeling. _Proceedings of the 24th International Conference on Autonomous Agents and Multiagent Systems (AAMAS '25)_. International Conference on Autonomous Agents and Multiagent Systems (pp. 3047-3049), Detroit, Michigan, USA.
+>See, K., Garcia, N. M., & Li, X. (2025). Simulating Blockchain Applications in Large-Value Payment Systems through Agent-Based Modeling. _Proceedings of the 24th International Conference on Autonomous Agents and Multiagent Systems (AAMAS '25)_ (pp. 3047-3049). International Foundation for Autonomous Agents and Multiagent Systems. Detroit, Michigan, USA.
 
 ```BibTeX
 % BibTeX citation
